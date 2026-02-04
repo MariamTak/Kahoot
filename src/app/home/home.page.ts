@@ -21,7 +21,7 @@ import { QuizCreationModalComponent } from '../components/quiz-creation-modal/qu
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content >
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
     <ion-fab-button (click)="openModal()">
       <ion-icon name="add-outline"></ion-icon>

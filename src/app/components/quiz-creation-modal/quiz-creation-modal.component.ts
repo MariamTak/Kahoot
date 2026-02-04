@@ -14,8 +14,16 @@ import {
 import { Question } from 'src/app/models/question';
 import { Quiz } from 'src/app/models/quiz';
 
-type QuizFormData = Omit<Quiz, 'id' | 'questions'> & {
-  questions: Omit<Question, 'id' | 'choices' | 'correctChoiceId'>[];
+//type QuizFormData = Omit<Quiz, 'id' | 'questions'> & {
+//  questions: Omit<Question, 'id' | 'choices' | 'correctChoiceId'>[];};
+
+type QuizFormData = {
+  title: string;
+  description: string;
+  questions: {
+    text: string;
+    choices: { text: string }[];
+  }[];
 };
 
 @Component({
@@ -24,7 +32,6 @@ type QuizFormData = Omit<Quiz, 'id' | 'questions'> & {
   imports: [
     IonHeader,
     IonToolbar,
-    IonTitle,
     IonContent,
     IonItem,
     IonInput,
@@ -35,15 +42,25 @@ type QuizFormData = Omit<Quiz, 'id' | 'questions'> & {
   template: `
 <ion-header>
   <ion-toolbar>
-    <ion-title>Nouveau Quiz</ion-title>
+    <ion-buttons slot="start">
+      <ion-button color="medium" (click)="cancel()">Annuler</ion-button>
+    </ion-buttons>
+
+
     <ion-buttons slot="end">
-      <ion-button (click)="cancel()">Annuler</ion-button>
+      <ion-button
+        (click)="confirm()"
+        [strong]="true"
+        [disabled]="!quizForm().valid()">
+        Créer
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content fullscreen class="ion-padding">
-  <form>
+<ion-content class="ion-padding">
+  <form (submit)="confirm()">
+
     <ion-item>
       <ion-input
         label="Titre"
@@ -62,36 +79,42 @@ type QuizFormData = Omit<Quiz, 'id' | 'questions'> & {
       </ion-input>
     </ion-item>
 
-    @for (q of quizForm.questions; track  $index) {
+    @for (question of quizForm.questions; track $index) {
       <ion-item>
         <ion-input
+          label="Question {{$index + 1}}"
+          labelPlacement="stacked"
           placeholder="Entrez la question"
-          [formField]="quizForm.questions[$index].text">
+          [formField]="question.text">
         </ion-input>
-        <ion-button fill="clear" color="danger" >
+        <ion-button fill="clear" color="danger" slot="end">
           Supprimer
         </ion-button>
       </ion-item>
+    @for (choice of question.choices; track $index) {
+        <ion-item>
+          <ion-input
+            label="Choix {{$index + 1}}"  
+            labelPlacement="stacked"
+            placeholder="Entrez le choix"
+            [formField]="choice.text">
+          </ion-input>
+        </ion-item>
     }
 
-    <ion-button expand="block"  class="ion-margin-top">
+        <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="addChoice($index)">
+          Ajouter un choix
+        </ion-button>
+    }
+    <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="addQuestion()">
       Ajouter une question
-    </ion-button>
-
-    <ion-button
-      expand="block"
-      type="button"
-      [disabled]="!quizForm().valid()"
-      (click)="confirm()"
-      class="ion-margin-top">
-      Créer
     </ion-button>
   </form>
 </ion-content>
+
   `
 })
 export class QuizCreationModalComponent {
-
   quizModel = signal<QuizFormData>({
     title: '',
     description: '',
@@ -108,12 +131,32 @@ export class QuizCreationModalComponent {
   constructor(private modalCtrl: ModalController) {}
 
   cancel() {
-    this.modalCtrl.dismiss(null, 'cancel');
+    return this.modalCtrl.dismiss(null, 'cancel');
   }
 
   confirm() {
     if (!this.quizForm().valid()) return;
-
-    this.modalCtrl.dismiss(this.quizForm().value(), 'confirm');
+    return this.modalCtrl.dismiss(this.quizForm().value(), 'confirm');
   }
+  addQuestion() {
+  this.quizModel.update(prev => ({
+    ...prev,
+    questions: [
+      ...prev.questions,
+      { text: '', choices: [] }
+    ]
+  }));
+}
+
+addChoice(questionIndex: number) {
+  this.quizModel.update(prev => ({
+    ...prev,
+    questions: prev.questions.map((q, index) =>
+      index === questionIndex
+        ? { ...q, choices: [...q.choices, { text: '' }] }
+        : q
+    )
+  }));
+}
+
 }
