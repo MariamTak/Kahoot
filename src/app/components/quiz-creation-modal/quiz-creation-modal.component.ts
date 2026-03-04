@@ -1,162 +1,301 @@
-import { Component, signal } from '@angular/core';
-import { form, FormField, required } from '@angular/forms/signals';
+import { Component, inject, input, linkedSignal, signal } from '@angular/core';
+import {
+  applyEach,
+  FormField,
+  form,
+  required,
+  SchemaPathTree,
+  validate,
+} from '@angular/forms/signals';
 import {
   IonHeader,
   IonToolbar,
   IonTitle,
+  IonButtons,
+  IonButton,
   IonContent,
   IonItem,
   IonInput,
-  IonButton,
-  IonButtons,
-  ModalController
+  IonList,
+  IonTextarea,
+  ModalController,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonRadio,
+  IonRadioGroup,
+  IonLabel,
+  IonIcon,
 } from '@ionic/angular/standalone';
-import { Question } from 'src/app/models/question';
 import { Quiz } from 'src/app/models/quiz';
+import { Choice } from 'src/app/models/choice';
+import { Question } from 'src/app/models/question';
+import { addIcons } from 'ionicons';
+import { removeOutline } from 'ionicons/icons';
+import { QuizService } from 'src/app/services/quiz';
 
-//type QuizFormData = Omit<Quiz, 'id' | 'questions'> & {
-//  questions: Omit<Question, 'id' | 'choices' | 'correctChoiceId'>[];};
+function ChoiceSchema(choice: SchemaPathTree<Choice>) {
+  required(choice.text, { message: 'Choice text is required' });
+}
 
-type QuizFormData = {
-  title: string;
-  description: string;
-  questions: {
-    text: string;
-    choices: { text: string }[];
-  }[];
-};
+function QuestionSchema(question: SchemaPathTree<Question>) {
+  required(question.text, { message: 'Question text is required' });
+  validate(question.correctChoiceId, ({ value, valueOf }) => {
+    if (!valueOf(question.choices)[value()]) {
+      return {
+        kind: 'no-correct-choice',
+        message: 'At least one choice must be marked as correct',
+      };
+    }
+    return null;
+  });
+  applyEach(question.choices, ChoiceSchema);
+}
 
 @Component({
-  selector: 'app-quiz-creation-modal',
-  standalone: true,
+  selector: 'create-quiz-modal',
+  template: `
+    <form id="createQuizForm" (submit)="confirm($event)" novalidate>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button
+              data-testid="cancel-create-quiz-button"
+              color="medium"
+              (click)="cancel()"
+            >
+              Cancel
+            </ion-button>
+          </ion-buttons>
+          <ion-title>
+            <ion-input
+              aria-label="Enter the quiz title"
+              [formField]="quizForm.title"
+              placeholder="Guess the capital city"
+              type="text"
+            ></ion-input>
+          </ion-title>
+          <ion-buttons slot="end">
+            <ion-button
+              data-testid="confirm-create-quiz-button"
+              type="submit"
+              form="createQuizForm"
+              [strong]="true"
+              [disabled]="quizForm().invalid()"
+            >
+              Confirm
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding" [fullscreen]="true">
+        <ion-list>
+          <ion-item>
+            <ion-textarea
+              labelPlacement="stacked"
+              label="Enter the quiz description"
+              [formField]="quizForm.description"
+              placeholder="Guess the capital city of various countries around the world."
+            ></ion-textarea>
+          </ion-item>
+        </ion-list>
+        <ion-grid>
+          <ion-row>
+            @for (question of quizForm.questions; track $index) {
+              <ion-col size="12">
+                <ion-card>
+                  <ion-button
+                    fill="clear"
+                    color="medium"
+                    class="ion-float-end"
+                    (click)="removeQuestion(question().value().id)"
+                  >
+                    <ion-icon name="remove-outline"></ion-icon>
+                  </ion-button>
+                  <ion-card-header>
+                    <ion-card-title>
+                      <ion-input
+                        aria-label="Enter the question text"
+                        [formField]="question.text"
+                        placeholder="Question"
+                      ></ion-input>
+                    </ion-card-title>
+                  </ion-card-header>
+                  <ion-card-content>
+                    <ion-radio-group [formField]="question.correctChoiceId">
+                      <ion-list lines="none">
+                        <ion-item>
+                          <ion-label>Choices</ion-label>
+                          <ion-label slot="end">Correct</ion-label>
+                        </ion-item>
+                        @for (
+                          choice of question.choices;
+                          track $index;
+                          let first = $first;
+                          let idx = $index
+                        ) {
+                          <ion-item>
+                            <ion-input
+                              aria-label="Enter the choice text"
+                              [formField]="choice.text"
+                              placeholder="Choice"
+                            ></ion-input>
+                            <ion-radio slot="end" [value]="idx"></ion-radio>
+                            @if (!first) {
+                              <ion-button
+                                fill="clear"
+                                slot="end"
+                                color="medium"
+                                (click)="
+                                  removeChoice(question().value().id, idx)
+                                "
+                              >
+                                <ion-icon name="remove-outline"></ion-icon>
+                              </ion-button>
+                            } @else {
+                              <span slot="end" style="width: 2rem;"></span>
+                            }
+                          </ion-item>
+                        }
+                      </ion-list>
+                    </ion-radio-group>
+                    <ion-button
+                      (click)="addChoice(question().value().id)"
+                      expand="full"
+                      >Add choice
+                    </ion-button>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            }
+          </ion-row>
+        </ion-grid>
+        <ion-button (click)="addQuestion()" expand="full">
+          Add question
+        </ion-button>
+      </ion-content>
+    </form>
+  `,
   imports: [
     IonHeader,
     IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
     IonContent,
     IonItem,
     IonInput,
-    IonButton,
-    IonButtons,
+    FormField,
+    IonList,
+    IonTextarea,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonRadio,
+    IonRadioGroup,
+    IonLabel,
+    IonIcon,
     FormField
-  ],
-  template: `
-<ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-button color="medium" (click)="cancel()">Annuler</ion-button>
-    </ion-buttons>
-
-
-    <ion-buttons slot="end">
-      <ion-button
-        (click)="confirm()"
-        [strong]="true"
-        [disabled]="!quizForm().valid()">
-        Créer
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
-<ion-content class="ion-padding">
-  <form (submit)="confirm()">
-
-    <ion-item>
-      <ion-input
-        label="Titre"
-        labelPlacement="stacked"
-        placeholder="Entrez le titre"
-        [formField]="quizForm.title">
-      </ion-input>
-    </ion-item>
-
-    <ion-item>
-      <ion-input
-        label="Description"
-        labelPlacement="stacked"
-        placeholder="Entrez la description"
-        [formField]="quizForm.description">
-      </ion-input>
-    </ion-item>
-
-    @for (question of quizForm.questions; track $index) {
-      <ion-item>
-        <ion-input
-          label="Question {{$index + 1}}"
-          labelPlacement="stacked"
-          placeholder="Entrez la question"
-          [formField]="question.text">
-        </ion-input>
-        <ion-button fill="clear" color="danger" slot="end">
-          Supprimer
-        </ion-button>
-      </ion-item>
-    @for (choice of question.choices; track $index) {
-        <ion-item>
-          <ion-input
-            label="Choix {{$index + 1}}"  
-            labelPlacement="stacked"
-            placeholder="Entrez le choix"
-            [formField]="choice.text">
-          </ion-input>
-        </ion-item>
-    }
-
-        <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="addChoice($index)">
-          Ajouter un choix
-        </ion-button>
-    }
-    <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="addQuestion()">
-      Ajouter une question
-    </ion-button>
-  </form>
-</ion-content>
-
-  `
+],
 })
-export class QuizCreationModalComponent {
-  quizModel = signal<QuizFormData>({
-    title: '',
-    description: '',
-    questions: []
+export class CreateQuizModal {
+  private readonly modalCtrl = inject(ModalController);
+  private readonly quizService = inject(QuizService);
+
+  constructor() {
+    addIcons({ removeOutline });
+  }
+
+  quiz = input<Quiz>();
+
+  _quiz = linkedSignal(() => this.quiz() ?? this.quizService.generateQuiz());
+
+  quizForm = form(this._quiz, (schemaPath) => {
+    required(schemaPath.title, { message: 'Title is required' });
+    applyEach(schemaPath.questions, QuestionSchema);
   });
 
-  quizForm = form(this.quizModel, (schema) => {
-    required(schema.title, { message: 'Titre obligatoire' });
-    required(schema.description, { message: 'Description obligatoire' });
+  addQuestion() {
+    const newQuestionId = this.quizService.generateQuestionId(this._quiz().id);
+    const newQuestion: Question = {
+      id: newQuestionId,
+      text: '',
+      choices: [{ id: 0, text: '' }],
+      correctChoiceId: 0,
+    };
+    this._quiz.update((q) => ({
+      ...q,
+      questions: [...q.questions, newQuestion],
+    }));
+    this.quizForm().markAsDirty();
+  }
 
-    //applyeach(schema.questions, QuestionSchema)
-  });
+  removeQuestion(questionId: string) {
+    this._quiz.update((q) => ({
+      ...q,
+      questions: q.questions.filter((question) => question.id !== questionId),
+    }));
+    this.quizForm().markAsDirty();
+  }
 
-  constructor(private modalCtrl: ModalController) {}
+  addChoice(questionId: string) {
+    this._quiz.update((q) => ({
+      ...q,
+      questions: q.questions.map((question) => {
+        if (question.id === questionId) {
+          return {
+            ...question,
+            choices: [...question.choices, { id: question.choices.length, text: '' }],
+          };
+        }
+        return question;
+      }),
+    }));
+    this.quizForm().markAsDirty();
+  }
+
+  removeChoice(questionId: string, choiceIndex: number) {
+    this._quiz.update((q) => ({
+      ...q,
+      questions: q.questions.map((question) => {
+        if (question.id === questionId) {
+          const updatedChoices = question.choices.filter(
+            (_, i) => i !== choiceIndex,
+          );
+          return {
+            ...question,
+            choices: updatedChoices,
+            correctChoiceId:
+              question.correctChoiceId === choiceIndex
+                ? 0
+                : question.correctChoiceId,
+          };
+        }
+        return question;
+      }),
+    }));
+    this.quizForm().markAsDirty();
+  }
 
   cancel() {
-    return this.modalCtrl.dismiss(null, 'cancel');
+    this.modalCtrl.dismiss();
   }
 
-  confirm() {
-    if (!this.quizForm().valid()) return;
-    return this.modalCtrl.dismiss(this.quizForm().value(), 'confirm');
+  confirm(event: Event) {
+    event.preventDefault();
+    if (this.quizForm().invalid()) {
+      return;
+    }
+    const quizFormValue = this.quizForm().value();
+
+    this.modalCtrl.dismiss(quizFormValue);
   }
-  addQuestion() {
-  this.quizModel.update(prev => ({
-    ...prev,
-    questions: [
-      ...prev.questions,
-      { text: '', choices: [] }
-    ]
-  }));
-}
-
-addChoice(questionIndex: number) {
-  this.quizModel.update(prev => ({
-    ...prev,
-    questions: prev.questions.map((q, index) =>
-      index === questionIndex
-        ? { ...q, choices: [...q.choices, { text: '' }] }
-        : q
-    )
-  }));
-}
-
 }

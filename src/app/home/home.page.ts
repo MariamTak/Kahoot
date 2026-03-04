@@ -1,69 +1,92 @@
-import { Component, inject } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol } from '@ionic/angular/standalone';
-import { QuizService } from '../services/quiz';
-import { AsyncPipe } from '@angular/common';
-import { addIcons } from 'ionicons';
-import { addOutline } from 'ionicons/icons';
-import { QuizCardComponent } from '../components/quiz-card/quiz-card.component';
+import { Component, inject, signal } from '@angular/core';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonGrid,
+  IonRow,
+  IonCol,
   IonFab,
   IonFabButton,
+  IonIcon,
   ModalController,
-  IonIcon} from '@ionic/angular/standalone';
-import { QuizCreationModalComponent } from '../components/quiz-creation-modal/quiz-creation-modal.component';
+} from '@ionic/angular/standalone';
+import { QuizService } from '../services/quiz';
+import { QuizCard } from '../components/quiz-card/quiz-card.component';
+import { addIcons } from 'ionicons';
+import { add } from 'ionicons/icons';
+import { CreateQuizModal } from '../components/quiz-creation-modal/quiz-creation-modal.component';
+import { PageHeader } from '../components/page-header/page-header.component';
 
 @Component({
-  selector: 'app-home',
+  selector: 'quiz-list',
   template: `
-<ion-header translucent>
-  <ion-toolbar>
-    <ion-title>Quizzes</ion-title>
-  </ion-toolbar>
-</ion-header>
+    <page-header [translucent]="true">Home</page-header>
 
-<ion-content >
-  <ion-fab slot="fixed" vertical="bottom" horizontal="end">
-    <ion-fab-button (click)="openModal()">
-      <ion-icon name="add-outline"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+    <ion-content [fullscreen]="true">
+      <page-header collapse="condense">Home</page-header>
 
-  @let _quizzes = quizzes | async;
-
-  <ion-grid >
-    <ion-row>
-      @for (quiz of _quizzes; track quiz.id) {
-        <ion-col size="12" sizeMd="6">
-          <quiz-card [quiz]="quiz"></quiz-card>
-        </ion-col>
-      }
-    </ion-row>
-  </ion-grid>
-
-
-</ion-content>
-`,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, AsyncPipe, IonGrid,QuizCardComponent, IonRow, IonCol, IonFab, IonFabButton, IonIcon],
+      <div id="container">
+        @let quizzes = this.quizzes.value();
+        <ion-grid>
+          <ion-row class="ion-justify-content-center ion-align-items-center">
+            @for (quiz of quizzes; track quiz.id) {
+              <ion-col>
+                <quiz-card [quiz]="quiz" />
+              </ion-col>
+            } @empty {
+              <ion-col class="ion-text-center">
+                No quiz created yet,
+                <a (click)="openCreateQuizModal()">Create your first one</a>
+              </ion-col>
+            }
+          </ion-row>
+        </ion-grid>
+      </div>
+    </ion-content>
+    <ion-fab slot="fixed" horizontal="end" vertical="bottom">
+      <ion-fab-button (click)="openCreateQuizModal()">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+    </ion-fab>
+  `,
+  styles: [``],
+  imports: [
+    IonContent,
+    IonGrid,
+    IonRow,
+    IonCol,
+    QuizCard,
+    IonFab,
+    IonFabButton,
+    IonIcon,
+    PageHeader,
+  ],
 })
 export class HomePage {
-private quizService = inject(QuizService);
-private modalController = inject(ModalController);
-  quizzes = this.quizService.getAll();
-  //legacy : dans constructor
-  ngOnInit(): void {
-    this.quizzes = this.quizService.getAll();
-  }
-constructor() {
-  addIcons({ addOutline });
-}
-async openModal() {
-  const modal = await this.modalController.create({
-    component: QuizCreationModalComponent,
-  });
-modal.present();
-    const { data, role } = await modal.onWillDismiss();
+  private readonly quizService = inject(QuizService);
+  private readonly modalCtrl = inject(ModalController);
 
-    if (role === 'confirm' && data) {
-      this.quizService.addQuiz(data);
-      this.quizzes = this.quizService.getAll();} 
-}}
+  protected readonly quizzes = rxResource({
+    stream: () => this.quizService.getAll(),
+  });
+
+  constructor() {
+    addIcons({ add });
+  }
+
+  async openCreateQuizModal() {
+    const modalRef = await this.modalCtrl.create({
+      component: CreateQuizModal,
+      cssClass: 'fullscreen-modal',
+    });
+
+    modalRef.present();
+    const eventDetails = await modalRef.onDidDismiss();
+    if (eventDetails.data) {
+      this.quizService.setQuiz(eventDetails.data);
+    }
+  }
+}
