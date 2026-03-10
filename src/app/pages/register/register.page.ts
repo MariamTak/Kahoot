@@ -9,6 +9,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { addIcons } from 'ionicons';
 import { AuthService } from 'src/app/services/auth';
 import {
   IonButton,
@@ -16,7 +17,10 @@ import {
   IonContent,
   IonToolbar,
   IonTitle,
+  IonRow,
+  IonCol,
   IonInput,
+  IonIcon,
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -70,8 +74,22 @@ import {
       ></ion-input>
 
       <ion-button [disabled]="registerForm.invalid" expand="block" type="submit"
-        >Register</ion-button
-      >
+        >Register</ion-button>
+        <ion-row>
+            <ion-col>
+              <ion-button
+                expand="block"
+                fill="outline"
+                type="button"
+                (click)="registerWithGoogle()"
+                >Register with Google
+                <ion-icon
+                  [style.margin-left.rem]="0.25"
+                  name="logo-google"
+                ></ion-icon
+              ></ion-button>
+            </ion-col>
+          </ion-row>
     </ion-content>
   </form>`,
   imports: [
@@ -80,6 +98,9 @@ import {
     IonContent,
     IonToolbar,
     IonTitle,
+    IonRow,
+    IonCol,
+    IonIcon,
     IonInput,
     CommonModule,
     ReactiveFormsModule,
@@ -105,6 +126,10 @@ export class RegisterPage {
     const { email, password, alias } = this.registerForm.value;
     this.authService.register(email!, password!, alias!);
   }
+
+registerWithGoogle() {
+  this.authService.signInWithGoogle(); 
+}
 }
 
 export function passwordConfirmMatchPasswordValidator(): ValidatorFn {
@@ -120,4 +145,6 @@ export function passwordConfirmMatchPasswordValidator(): ValidatorFn {
       ? null
       : { passwordConfirmMissmatch: true };
   };
+
+  
 }

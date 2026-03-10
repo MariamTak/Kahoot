@@ -44,7 +44,7 @@ function ChoiceSchema(choice: SchemaPathTree<Choice>) {
 
 function QuestionSchema(question: SchemaPathTree<Question>) {
   required(question.text, { message: 'Question text is required' });
-  validate(question.correctChoiceId, ({ value, valueOf }) => {
+  validate(question.correctChoiceIndex, ({ value, valueOf }) => {
     if (!valueOf(question.choices)[value()]) {
       return {
         kind: 'no-correct-choice',
@@ -126,7 +126,7 @@ function QuestionSchema(question: SchemaPathTree<Question>) {
                     </ion-card-title>
                   </ion-card-header>
                   <ion-card-content>
-                    <ion-radio-group [formField]="question.correctChoiceId">
+                    <ion-radio-group [formField]="question.correctChoiceIndex">
                       <ion-list lines="none">
                         <ion-item>
                           <ion-label>Choices</ion-label>
@@ -229,7 +229,7 @@ export class CreateQuizModal {
       id: newQuestionId,
       text: '',
       choices: [{ id: 0, text: '' }],
-      correctChoiceId: 0,
+      correctChoiceIndex: 0,
     };
     this._quiz.update((q) => ({
       ...q,
@@ -273,10 +273,10 @@ export class CreateQuizModal {
           return {
             ...question,
             choices: updatedChoices,
-            correctChoiceId:
-              question.correctChoiceId === choiceIndex
+            correctChoiceIndex:
+              question.correctChoiceIndex === choiceIndex
                 ? 0
-                : question.correctChoiceId,
+                : question.correctChoiceIndex,
           };
         }
         return question;

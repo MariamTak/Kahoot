@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "847025104477",
+    "project_id": "kahoot-1372e",
+    "storage_bucket": "kahoot-1372e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:847025104477:android:913f287589bb19115bcfb4",
+        "android_client_info": {
+          "package_name": "io.ionic.starter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "847025104477-os9o2vit6dlvrqohtp52g3sbtk9pa0he.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.ionic.starter",
+            "certificate_hash": "7dd6b4daa3aa9aa58dd74b03ddefb6c79ad08a1a"
+          }
+        },
+        {
+          "client_id": "847025104477-snfrr5pv834mfsrlj623qdv4u8gfnbpq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlDmufqoPSc9TN9WunaFTv6UNuktN1ofs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "847025104477-snfrr5pv834mfsrlj623qdv4u8gfnbpq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

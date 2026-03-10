@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { SocialLogin } from '@capgo/capacitor-social-login';
 import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 
 @Component({
@@ -9,6 +10,12 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular/standalone';
 </ion-app>`,
   imports: [IonApp, IonRouterOutlet],
 })
-export class AppComponent {
-  constructor() {}
+export class AppComponent implements OnInit {
+  async ngOnInit() {
+    await SocialLogin.initialize({
+      google: {
+        webClientId: '847025104477-snfrr5pv834mfsrlj623qdv4u8gfnbpq.apps.googleusercontent.com',
+      }
+    });
+  }
 }

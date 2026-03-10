@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable} from '@angular/core';
 import {
   Auth,
   User,
@@ -8,11 +8,16 @@ import {
   signOut,
   sendPasswordResetEmail,
   sendEmailVerification,
+  GoogleAuthProvider,
+  signInWithCredential,
+  signInWithPopup,
 } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { UserService } from './user';
 import { ToastController } from '@ionic/angular/standalone';
+import { SocialLogin } from '@capgo/capacitor-social-login';
+import { Capacitor } from '@capacitor/core';
 
 @Injectable({
   providedIn: 'root',
@@ -23,25 +28,34 @@ export class AuthService {
   private userService = inject(UserService);
   private toastController = inject(ToastController);
 
+  private readonly connectedUser$: Observable<User | null> = user(this.auth);
+
   getConnectedUser(): Observable<User | null> {
-    return user(this.auth);
+    return this.connectedUser$;
   }
 
-  async register(
-    email: string,
-    password: string,
-    alias: string,
-  ): Promise<void> {
-    const userCred = await createUserWithEmailAndPassword(
-      this.auth,
-      email,
-      password,
-    );
-    await this.userService.create({ alias, ...userCred.user });
+async register(email: string, password: string, alias: string): Promise<void> {
+  let toast: HTMLIonToastElement | undefined;
+  try {
+    const userCred = await createUserWithEmailAndPassword(this.auth, email, password);
+    const plainUser = JSON.parse(JSON.stringify(userCred.user));
+    await this.userService.create({ ...plainUser, alias });
     await sendEmailVerification(userCred.user);
-    return this.logout();
+    toast = await this.toastController.create({
+      message: 'Account created! Please verify your email.',
+      duration: 2000,
+    });
+    await toast.present();
+    await this.logout(); 
+  } catch (error: any) {
+    console.error('Registration error:', error);
+    const message = error.code === 'auth/email-already-in-use'
+      ? 'This email is already registered.'
+      : 'Registration failed. Please try again.';
+    toast = await this.toastController.create({ message, duration: 2500 });
+    await toast.present();
   }
-
+}
   async login(email: string, password: string): Promise<void> {
     let toast: HTMLIonToastElement | undefined;
     try {
@@ -61,12 +75,37 @@ export class AuthService {
       await toast?.present();
     }
   }
-/*
-  async signInWithGoogle() {
-    await FirebaseAuthentication.signInWithGoogle();
 
+async signInWithGoogle(): Promise<void> {
+  let toast: HTMLIonToastElement | undefined;
+  try {
+    if (Capacitor.isNativePlatform()) {
+      const result = await SocialLogin.login({
+        provider: 'google',
+        options: {} 
+      });
+      const googleResult = result.result as any;
+      const credential = GoogleAuthProvider.credential(googleResult.idToken);
+      await signInWithCredential(this.auth, credential);
+    } else {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(this.auth, provider);
+    }
     this.router.navigateByUrl('/');
-  }*/
+    toast = await this.toastController.create({
+      message: 'Google login successful',
+      duration: 1500,
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    toast = await this.toastController.create({
+      message: `Google login failed: ${(error as any)?.message}`,
+      duration: 3000,
+    });
+  } finally {
+    await toast?.present();
+  }
+}
 
   async logout(): Promise<void> {
     await signOut(this.auth);

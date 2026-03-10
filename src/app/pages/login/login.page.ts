@@ -83,6 +83,7 @@ addIcons({ logoGoogle });
                 expand="block"
                 fill="outline"
                 type="button"
+                (click)="loginWithGoogle()"
                 >Login with Google
                 <ion-icon
                   [style.margin-left.rem]="0.25"
@@ -134,8 +135,8 @@ export class LoginPage {
     const { email, password } = this.loginForm.value;
     this.authService.login(email!, password!);
   }
-/*
+
   loginWithGoogle() {
     this.authService.signInWithGoogle();
-  }*/
+  }
 }

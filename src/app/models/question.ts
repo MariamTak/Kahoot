@@ -3,4 +3,4 @@ export interface Question {
     id: string;
     text: string;           
     choices: Choice[];
-    correctChoiceId: number; }
+    correctChoiceIndex: number; }

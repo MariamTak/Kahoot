@@ -18,7 +18,7 @@ import { addIcons } from 'ionicons';
   selector: 'quiz-card',
   template: `
     @let quiz = this.quiz();
-    <ion-card [routerLink]="'/quiz/' + quiz.id">
+    <ion-card [routerLink]="'/quiz-detail/' + quiz.id">
       <ion-card-header>
         <ion-card-title>
           {{ quiz.title | titlecase }}

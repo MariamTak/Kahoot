@@ -1,9 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
-import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
   IonGrid,
   IonRow,
@@ -29,18 +26,23 @@ import { PageHeader } from '../components/page-header/page-header.component';
       <page-header collapse="condense">Home</page-header>
 
       <div id="container">
-        @let quizzes = this.quizzes.value();
         <ion-grid>
           <ion-row class="ion-justify-content-center ion-align-items-center">
-            @for (quiz of quizzes; track quiz.id) {
-              <ion-col>
-                <quiz-card [quiz]="quiz" />
-              </ion-col>
-            } @empty {
+            @if (isLoading()) {
               <ion-col class="ion-text-center">
-                No quiz created yet,
-                <a (click)="openCreateQuizModal()">Create your first one</a>
+                <p>Loading quizzes...</p>
               </ion-col>
+            } @else {
+              @for (quiz of quizzes(); track quiz.id) {
+                <ion-col>
+                  <quiz-card [quiz]="quiz" />
+                </ion-col>
+              } @empty {
+                <ion-col class="ion-text-center">
+                  No quiz created yet,
+                  <a (click)="openCreateQuizModal()">Create your first one</a>
+                </ion-col>
+              }
             }
           </ion-row>
         </ion-grid>
@@ -52,7 +54,6 @@ import { PageHeader } from '../components/page-header/page-header.component';
       </ion-fab-button>
     </ion-fab>
   `,
-  styles: [``],
   imports: [
     IonContent,
     IonGrid,
@@ -68,13 +69,25 @@ import { PageHeader } from '../components/page-header/page-header.component';
 export class HomePage {
   private readonly quizService = inject(QuizService);
   private readonly modalCtrl = inject(ModalController);
-
-  protected readonly quizzes = rxResource({
-    stream: () => this.quizService.getAll(),
-  });
+  
+  private quizzes$ = this.quizService.getAll();
+  protected quizzes = toSignal(this.quizzes$, { initialValue: [] });
+  protected isLoading = signal(true);
 
   constructor() {
     addIcons({ add });
+    
+    // Track loading state
+    this.quizzes$.subscribe({
+      next: (quizzes) => {
+        console.log('Quizzes loaded:', quizzes);
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading quizzes:', error);
+        this.isLoading.set(false);
+      }
+    });
   }
 
   async openCreateQuizModal() {
@@ -86,7 +99,14 @@ export class HomePage {
     modalRef.present();
     const eventDetails = await modalRef.onDidDismiss();
     if (eventDetails.data) {
-      this.quizService.setQuiz(eventDetails.data);
+      try {
+        await this.quizService.setQuiz(eventDetails.data);
+        // Force refresh by reassigning the observable
+        this.quizzes$ = this.quizService.getAll();
+        this.quizzes = toSignal(this.quizzes$, { initialValue: [] });
+      } catch (error) {
+        console.error('Error creating quiz:', error);
+      }
     }
   }
 }

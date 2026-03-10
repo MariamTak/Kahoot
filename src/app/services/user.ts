@@ -4,10 +4,10 @@ import {
   collection,
   collectionData,
   doc,
+  setDoc,
   Firestore,
 } from '@angular/fire/firestore';
 import { User } from '@angular/fire/auth';
-import { setDoc } from 'firebase/firestore';
 
 export interface UserWithAlias extends User {
   alias: string;
