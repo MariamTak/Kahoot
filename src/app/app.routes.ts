@@ -27,5 +27,25 @@ export const routes: Routes = [
   {
     path: 'password-retrieve',
     loadComponent: () => import('./pages/password-retrieve/password-retrieve.page').then( m => m.PasswordRetrievePage)
+<<<<<<< Updated upstream
   }
+=======
+  },
+  {
+  path: 'game-lobby/:id',
+  loadComponent: () =>
+    import('./game/game-page/game-page.page').then(m => {
+      console.log('module loaded:', m);  
+      return m.GamePagePage;
+    }),
+},
+
+
+
+  {
+  path: 'join-game',
+  canActivate: [isAuthenticatedGuard],
+  loadComponent: () => import('./game/join-game.page').then(m => m.JoinGamePage)
+}
+>>>>>>> Stashed changes
 ];
