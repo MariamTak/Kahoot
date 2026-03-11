@@ -1,22 +1,13 @@
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  IonContent,
-  IonGrid,
-  IonRow,
-  IonCol,
-  IonFab,
-  IonFabButton,
-  IonIcon,
-  ModalController,
-} from '@ionic/angular/standalone';
+import { IonContent, IonGrid, IonRow, IonCol, IonFab, IonFabButton, IonIcon, ModalController, IonFooter } from '@ionic/angular/standalone';
 import { QuizService } from '../services/quiz';
 import { QuizCard } from '../components/quiz-card/quiz-card.component';
 import { addIcons } from 'ionicons';
 import { add } from 'ionicons/icons';
 import { CreateQuizModal } from '../components/quiz-creation-modal/quiz-creation-modal.component';
 import { PageHeader } from '../components/page-header/page-header.component';
-
+import { PageFooter } from '../components/page-footer/page-footer.component';
 @Component({
   selector: 'quiz-list',
   template: `
@@ -48,11 +39,15 @@ import { PageHeader } from '../components/page-header/page-header.component';
         </ion-grid>
       </div>
     </ion-content>
+    <ion-content>
     <ion-fab slot="fixed" horizontal="end" vertical="bottom">
       <ion-fab-button (click)="openCreateQuizModal()">
         <ion-icon name="add"></ion-icon>
       </ion-fab-button>
-    </ion-fab>
+    </ion-fab></ion-content>
+    <ion-footer>
+    <page-footer></page-footer> </ion-footer>
+
   `,
   imports: [
     IonContent,
@@ -64,7 +59,9 @@ import { PageHeader } from '../components/page-header/page-header.component';
     IonFabButton,
     IonIcon,
     PageHeader,
-  ],
+    PageFooter,
+    IonFooter
+],
 })
 export class HomePage {
   private readonly quizService = inject(QuizService);

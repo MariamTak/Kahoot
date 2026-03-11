@@ -27,5 +27,10 @@ export const routes: Routes = [
   {
     path: 'password-retrieve',
     loadComponent: () => import('./pages/password-retrieve/password-retrieve.page').then( m => m.PasswordRetrievePage)
-  }
+  },
+  {
+  path: 'join-game',
+  canActivate: [isAuthenticatedGuard],
+  loadComponent: () => import('./game/join-game.page').then(m => m.JoinGamePage)
+}
 ];
