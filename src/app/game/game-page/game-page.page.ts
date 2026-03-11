@@ -9,6 +9,7 @@ import { GameService } from 'src/app/services/game';
 import { Game } from 'src/app/models/game';
 import { addIcons } from 'ionicons';
 import { playOutline, copyOutline, checkmarkOutline, peopleOutline } from 'ionicons/icons';
+import { QRCodeComponent } from 'angularx-qrcode';
 
 @Component({
   selector: 'app-game-page',
@@ -18,6 +19,7 @@ import { playOutline, copyOutline, checkmarkOutline, peopleOutline } from 'ionic
   imports: [
     IonContent, IonHeader, IonTitle, IonToolbar,
     IonButton, IonIcon, IonSpinner,
+    QRCodeComponent
   ],
 })
 export class GamePagePage implements OnInit, OnDestroy {
@@ -63,4 +65,5 @@ export class GamePagePage implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.sub?.unsubscribe();
   }
+
 }
