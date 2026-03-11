@@ -12,7 +12,8 @@ import {
   where, 
   writeBatch, 
   deleteDoc,
-  Firestore 
+  Firestore ,
+  setDoc
 } from 'firebase/firestore';
 import { collectionData, docData } from 'rxfire/firestore';
 import { environment } from 'src/environments/environment';
@@ -205,4 +206,14 @@ getAll(): Observable<Quiz[]> {
 
     await batch.commit();
   }
+
+  generateQuizCode(length = 6): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+  
 }
