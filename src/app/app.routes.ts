@@ -38,4 +38,10 @@ export const routes: Routes = [
 },
 
 
+  },
+  {
+  path: 'join-game',
+  canActivate: [isAuthenticatedGuard],
+  loadComponent: () => import('./game/join-game.page').then(m => m.JoinGamePage)
+}
 ];
