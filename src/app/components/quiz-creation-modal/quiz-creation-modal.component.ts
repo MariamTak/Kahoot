@@ -203,7 +203,7 @@ function QuestionSchema(question: SchemaPathTree<Question>) {
     IonRadioGroup,
     IonLabel,
     IonIcon,
-    FormField
+
 ],
 })
 export class CreateQuizModal {
