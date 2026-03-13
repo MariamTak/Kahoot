@@ -82,7 +82,6 @@ import { CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint } from '@capac
     </ion-footer>
   `,
   styles: [`
-    /* ... keep all existing styles ... */
 
     .error-msg {
       text-align: center;
@@ -158,6 +157,5 @@ export class JoinGamePage {
 
   joinWithScannedCode() {
     console.log('Joining with scanned code:', this.scannedCode());
-    // navigate or call your game service here
   }
 }

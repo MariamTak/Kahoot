@@ -31,11 +31,7 @@ export const routes: Routes = [
   ,
 {
   path: 'game-lobby/:id',
-  loadComponent: () =>
-    import('./game/game-page/game-page.page').then(m => {
-      console.log('module loaded:', m);  // ← vérifier si le module charge
-      return m.GamePagePage;
-    }),
+  loadComponent: () => import('./game/game-waiting/game-waiting').then(m => { return m.GameWaitingPage; })
 },
 
 

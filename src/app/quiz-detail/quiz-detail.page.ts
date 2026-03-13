@@ -10,17 +10,19 @@ import {
   IonCardContent, 
   IonCardTitle, 
   IonLabel, 
+  IonFooter,
   IonList, 
   IonItem 
 } from '@ionic/angular/standalone';
 import { QuizService } from '../services/quiz';
 import { PageHeader } from '../components/page-header/page-header.component';
-
+import { PageFooter } from '../components/page-footer/page-footer.component';
 @Component({
   selector: 'app-quiz-detail',
   standalone: true,
   imports: [
     CommonModule,
+    IonFooter,
     IonContent,
     IonCard,
     IonCardHeader,
@@ -29,6 +31,7 @@ import { PageHeader } from '../components/page-header/page-header.component';
     IonList,
     IonItem,
     IonLabel,
+    PageFooter,
     PageHeader
   ],
   template: `
@@ -81,6 +84,9 @@ import { PageHeader } from '../components/page-header/page-header.component';
         }
       }
     </ion-content>
+    <ion-footer>
+      <page-footer></page-footer>
+    </ion-footer>
   `,
   styles: [`
     ion-card {

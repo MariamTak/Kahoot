@@ -22,7 +22,6 @@ export class GameService {
     this.firestore = getFirestore(app);
   }
 
-  // Crée un game dans Firestore et retourne le gameId
   async createGame(quizId: string): Promise<string> {
     const gamesRef = collection(this.firestore, 'games');
     const gameRef = doc(gamesRef);
