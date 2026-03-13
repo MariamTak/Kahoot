@@ -10,7 +10,7 @@ import {
 
 @Component({
   selector: 'page-footer',
-  template: ` <ion-toolbar color="light">
+  template: ` <ion-toolbar>
       <div class="footer-buttons">
         <ion-button (click)="navigateTo('home')" [strong]="currentPage==='home'" color="medium">
           <ion-icon [icon]="home" ></ion-icon>

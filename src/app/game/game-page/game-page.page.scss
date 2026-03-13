@@ -113,3 +113,15 @@ ion-content { --background: #08080f; }
   height: 52px;
 }
 .start-btn[disabled] { opacity: 0.35; }
+
+.qr-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.qr-hint {
+  font-size: 12px;
+  color: var(--muted);
+}

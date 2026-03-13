@@ -53,6 +53,18 @@
             </div>
           }
         </div>
+
+        
+  @if (game()) {
+  <div class="qr-wrapper">
+    <qrcode
+      [qrdata]="game()!.entryCode"
+      [width]="160"
+      [errorCorrectionLevel]="'M'"
+    />
+    <p class="qr-hint">Scan to join</p>
+  </div>
+}
       </div>
 
       <!-- Start button -->
