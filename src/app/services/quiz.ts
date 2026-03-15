@@ -4,6 +4,8 @@ import { Question } from '../models/question';
 import { Observable, of, switchMap, tap, firstValueFrom, map , combineLatest} from 'rxjs';
 import { AuthService } from './auth';
 import { initializeApp } from 'firebase/app';
+
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { 
   getFirestore, 
   collection, 
@@ -25,6 +27,7 @@ import { environment } from 'src/environments/environment';
 export class QuizService {
   private firestore: Firestore;
   private authService = inject(AuthService);
+
   
   constructor() {
     // Initialize Firebase with your config
@@ -170,6 +173,7 @@ getAll(): Observable<Quiz[]> {
       correctChoiceIndex: question.correctChoiceIndex,
       // choices includes both id and text, preserving the full structure
       choices: question.choices.map((c, i) => ({ id: c.id ?? i, text: c.text })),
+      imageUrl: question.imageUrl ?? null, 
     });
   }
    console.log('updateQuiz called with:', updatedQuiz);
@@ -248,6 +252,7 @@ async updateQuizInfo(quizId: string, title: string, description: string): Promis
         text: question.text,
         correctChoiceIndex: question.correctChoiceIndex,
         choices: question.choices,
+         imageUrl: question.imageUrl ?? null, 
       });
     }
 
@@ -261,6 +266,16 @@ async updateQuizInfo(quizId: string, title: string, description: string): Promis
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return code;
+}
+
+async uploadQuestionImage(file: File, questionId: string): Promise<string> {
+  const storage = getStorage();
+  const fileRef = storageRef(storage, `questions/${questionId}/${file.name}`);
+  
+  const snapshot = await uploadBytes(fileRef, file);
+  const downloadUrl = await getDownloadURL(snapshot.ref);
+  
+  return downloadUrl;
 }
   
 }

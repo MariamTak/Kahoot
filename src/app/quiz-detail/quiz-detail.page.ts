@@ -71,6 +71,13 @@ import { Quiz } from '../models/quiz';
                   <ion-label>
                     <h2>Question {{ qi + 1 }}:</h2>
                     <p>{{ question.text }}</p>
+                    <!-- ✅ afficher l'image si elle existe -->
+                        @if (question.imageUrl) {
+                          <img
+                            [src]="question.imageUrl"
+                            style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin: 8px 0;"
+                          />
+                        }
                     <ul>
                       @for (choice of question.choices; track choice.id; let ci = $index) {
                         <li>

@@ -1,6 +1,6 @@
 import { Component, inject, Input, OnInit, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
-
+import { QuestionImageComponent } from 'src/app/question-image/question-image.component';
 import {
   IonHeader,
   IonToolbar,
@@ -24,6 +24,7 @@ import {
   IonRadioGroup,
   IonLabel,
   IonIcon,
+  
 } from '@ionic/angular/standalone';
 
 import { Quiz } from 'src/app/models/quiz';
@@ -92,6 +93,13 @@ import { removeOutline } from 'ionicons/icons';
                       placeholder="Question"
                     ></ion-input>
                   </ion-col>
+                   <!-- ✅ ajoute ici -->
+                <app-question-image
+                  [questionId]="questionsArray.at(qi).get('id')?.value"
+                  [imageUrl]="questionsArray.at(qi).get('imageUrl')?.value"
+                  (imageUploaded)="onImageUploaded($event, qi)"
+                  (imageRemoved)="onImageRemoved(qi)"
+                />
                   <ion-col size="auto">
                     <ion-button fill="clear" color="danger" (click)="removeQuestion(qi)">
                       <ion-icon name="remove-outline"></ion-icon>
@@ -166,6 +174,7 @@ import { removeOutline } from 'ionicons/icons';
     IonRadioGroup,
     IonLabel,
     IonIcon,
+    QuestionImageComponent
   ],
 })
 export class QuizUpdateModalComponent implements OnInit {
@@ -214,6 +223,7 @@ export class QuizUpdateModalComponent implements OnInit {
             id: [q.id],
             text: [q.text, Validators.required],
             correctChoiceIndex: [q.correctChoiceIndex],
+            imageUrl: [q.imageUrl ?? null],
             choices: this.fb.array(
               (q.choices ?? []).map(c =>
                 this.fb.group({ text: [c.text, Validators.required] })
@@ -246,4 +256,11 @@ export class QuizUpdateModalComponent implements OnInit {
   removeChoice(questionIndex: number, choiceIndex: number) {
     this.getChoices(questionIndex).removeAt(choiceIndex);
   }
+  onImageUploaded(url: string, questionIndex: number) {
+  this.questionsArray.at(questionIndex).patchValue({ imageUrl: url });
+}
+
+onImageRemoved(questionIndex: number) {
+  this.questionsArray.at(questionIndex).patchValue({ imageUrl: null });
+}
 }
