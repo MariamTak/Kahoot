@@ -202,9 +202,7 @@ function QuestionSchema(question: SchemaPathTree<Question>) {
     IonRadio,
     IonRadioGroup,
     IonLabel,
-    IonIcon,
-    FormField
-],
+    IonIcon],
 })
 export class CreateQuizModal {
   private readonly modalCtrl = inject(ModalController);
