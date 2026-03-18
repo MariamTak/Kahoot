@@ -15,6 +15,6 @@ export interface Game {
   status: GameStatus;
   entryCode: string;
   currentQuestionIndex: number;
-  currentQuestionStatus: 'in-progress' | 'done';
+  currentStatus: 'in-progress' | 'done';
   adminId: string;
 }
