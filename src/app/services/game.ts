@@ -12,13 +12,15 @@ import {
   arrayUnion,
   arrayRemove,
   Firestore,
+  getDocs,
+  writeBatch,
   getDoc
 } from 'firebase/firestore';
 import { environment } from 'src/environments/environment';
 import { Game } from '../models/game';
 import { collectionData, docData } from 'rxfire/firestore';
 import { AuthService } from './auth';
-
+import { PlayerScore } from '../models/player';
 @Injectable({ providedIn: 'root' })
 export class GameService {
   private firestore: Firestore;
@@ -43,7 +45,7 @@ export class GameService {
       players: [],
       adminId: user.uid,          
       currentQuestionIndex: 0,
-      currentQuestionStatus: 'in-progress',
+      currentStatus: 'in-progress',
       createdAt: new Date(),
     });
 
@@ -120,7 +122,7 @@ export class GameService {
   async submitAnswer(
     gameId: string,
     questionIndex: number,
-    choiceIndex: number
+    choiceIndex: number, 
   ): Promise<void> {
     const user = await firstValueFrom(
       this.authService.getConnectedUser().pipe(filter(u => u !== null))
@@ -159,4 +161,58 @@ export class GameService {
     const snap = await getDoc(answerRef);
     return snap.exists();
   }
+  async showQuestionResults(
+  gameId: string,
+  questionIndex: number,
+  correctChoiceIndex: number,
+  players: { uid: string; alias: string }[]
+): Promise<void> {
+  const answersRef = collection(this.firestore, `games/${gameId}/answers`);
+  const q = query(answersRef, where('questionIndex', '==', questionIndex));
+  const answersSnap = await getDocs(q);
+  const answers = answersSnap.docs.map(d => d.data());
+
+  const batch = writeBatch(this.firestore);
+
+  for (const player of players) {
+    const answer = answers.find(a => a['uid'] === player.uid);
+    const isCorrect = answer?.['choiceIndex'] === correctChoiceIndex;
+
+    let questionScore = 0;
+    if (isCorrect && answer) {
+      const answeredAt = answer['answeredAt']?.toDate?.() ?? new Date();
+      const secondsTaken = Math.min(30, (answeredAt.getTime() - Date.now() + 30000) / 1000);
+      questionScore = Math.round(1000 - (secondsTaken / 30) * 500);
+    }
+
+    const scoreRef = doc(this.firestore, `games/${gameId}/scores/${player.uid}`);
+    const existing = await getDoc(scoreRef);
+    const prevTotal = existing.exists() ? (existing.data()['totalScore'] ?? 0) : 0;
+
+    batch.set(scoreRef, {
+      uid: player.uid,
+      alias: player.alias,
+      totalScore: prevTotal + questionScore,
+      lastQuestionScore: questionScore,
+    });
+  }
+
+  await batch.commit();
+
+  await updateDoc(doc(this.firestore, 'games', gameId), {
+    currentStatus: 'done',
+  });
+}
+
+async goToNextQuestion(gameId: string, nextIndex: number): Promise<void> {
+  await updateDoc(doc(this.firestore, 'games', gameId), {
+    currentQuestionIndex: nextIndex,
+    currentStatus: 'in-progress',
+  });
+}
+
+getScores(gameId: string): Observable<PlayerScore[]> {
+  const scoresRef = collection(this.firestore, `games/${gameId}/scores`);
+  return collectionData(scoresRef, { idField: 'uid' }) as Observable<PlayerScore[]>;
+}
 }

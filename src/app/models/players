@@ -1,6 +1,0 @@
-export interface Players {
-  uid: string;
-  alias: string;
-  totalScore: number;
-  joinedAt: Date;
-}

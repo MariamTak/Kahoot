@@ -14,11 +14,12 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline, trophyOutline, peopleOutline } from 'ionicons/icons';
-
+import { PlayerScore } from 'src/app/models/player';
+import { QuestionBoardComponent } from './question-board';
 @Component({
   selector: 'app-game-play',
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonIcon, IonSpinner],
+  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonIcon, IonSpinner, QuestionBoardComponent],
   template: `
     <ion-header>
       <ion-toolbar>
@@ -68,6 +69,13 @@ import { arrowForwardOutline, trophyOutline, peopleOutline } from 'ionicons/icon
           <!-- Question -->
           <div class="kh-question-card">
             <p class="kh-question-text">{{ currentQuestion()!.text }}</p>
+             @if (currentQuestion()!.imageUrl) {
+                          <img
+                            [src]="currentQuestion()!.imageUrl"
+                            style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin: 8px 0;"
+                          />
+                        }
+            
           </div>
 
           <!-- Choices -->
@@ -85,49 +93,49 @@ import { arrowForwardOutline, trophyOutline, peopleOutline } from 'ionicons/icon
             }
           </div>
 
-          <!-- Player: waiting after answer -->
-          @if (!isAdmin() && hasAnswered()) {
-            <div class="kh-waiting-banner">
-              <ion-spinner name="dots" class="kh-dots-spinner"></ion-spinner>
-              Waiting for next question…
-            </div>
-          }
 
-          <!-- Admin: answers + next button -->
-          @if (isAdmin()) {
-            <div class="kh-admin-bar">
-              <div class="kh-players-card">
-                <div class="kh-players-header">
-                  <ion-icon name="people-outline"></ion-icon>
-                  <span>Answers</span>
-                  <span class="kh-answers-count">
-                    {{ answersCount() }} / {{ game()!.players.length }}
-                  </span>
-                </div>
-                <div class="kh-players-list">
-                  @if (answersCount() === 0) {
-                    <div class="kh-empty">Waiting for answers…</div>
-                  }
-                  @for (answer of answers(); track answer.uid) {
-                    <div class="kh-player-row">
-                      <div class="kh-avatar">✓</div>
-                      <span class="kh-player-name">{{ answer.uid }}</span>
-                    </div>
-                  }
-                </div>
-              </div>
-
-              <button class="kh-next-btn" (click)="nextQuestion()">
-                <ion-icon [name]="isLastQuestion() ? 'trophy-outline' : 'arrow-forward-outline'"></ion-icon>
-                {{ isLastQuestion() ? 'Finish Game!' : 'Next Question' }}
-              </button>
-            </div>
-          }
-
+         @if (game()?.currentStatus === 'done') {
+  <app-question-board
+    [question]="currentQuestion()!"
+    [scores]="scores()"
+    [answers]="answers()"
+    [players]="game()!.players"
+    [isAdmin]="isAdmin()"
+    [isLast]="isLastQuestion()"
+    (onNext)="nextQuestion()"
+  />
+} @else if (isAdmin()) {
+  <div class="kh-admin-bar">
+    <div class="kh-players-card">
+      <div class="kh-players-header">
+        <ion-icon name="people-outline"></ion-icon>
+        <span>Answers</span>
+        <span class="kh-answers-count">{{ answersCount() }} / {{ game()!.players.length }}</span>
+      </div>
+    </div>
+  </div>
+}
         }
       </div>
     </ion-content>
   `,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   styles: [`
     :host {
       --kh-purple: #46178f;
@@ -348,13 +356,40 @@ import { arrowForwardOutline, trophyOutline, peopleOutline } from 'ionicons/icon
     .kh-next-btn ion-icon { font-size: 1.3rem; }
   `]
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export class GamePlayComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private gameService = inject(GameService);
   private quizService = inject(QuizService);
   private authService = inject(AuthService);
-
+  scores = signal<PlayerScore[]>([]);
+  private scoresSub!: Subscription;
   game = signal<Game | null>(null);
   quiz = signal<Quiz | null>(null);
   selectedChoice = signal<number | null>(null);
@@ -392,7 +427,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.gameId = this.route.snapshot.paramMap.get('id')!;
-
+    this.scoresSub = this.gameService.getScores(this.gameId).subscribe(s => this.scores.set(s));
     const user = await firstValueFrom(
       this.authService.getConnectedUser().pipe(filter(u => u !== null))
     );
@@ -416,7 +451,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       }
 
       if (game.status === 'finished') {
-        this.router.navigate(['/game', this.gameId, 'results']);
+        this.router.navigate(['/game', this.gameId, 'scoreboard']);
       }
     });
 
@@ -428,18 +463,27 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     this.timeLeft.set(30);
     this.timerInterval = setInterval(async () => {
       const current = this.timeLeft();
-      if (current <= 1) {
-        clearInterval(this.timerInterval);
-        this.timeLeft.set(0);
-        if (!this.isAdmin() && !this.hasAnswered()) {
-          this.hasAnswered.set(true);
-          await this.gameService.submitAnswer(
-            this.gameId,
-            this.game()!.currentQuestionIndex,
-            -1
-          );
-        }
-      } else {
+      
+  if (current <= 1) {
+  clearInterval(this.timerInterval);
+  this.timeLeft.set(0);
+  if (!this.isAdmin() && !this.hasAnswered()) {
+    this.hasAnswered.set(true);
+    await this.gameService.submitAnswer(
+      this.gameId,
+      this.game()!.currentQuestionIndex,
+      -1
+    );
+  }
+  if (this.isAdmin()) {
+    await this.gameService.showQuestionResults(
+      this.gameId,
+      this.game()!.currentQuestionIndex,
+      this.currentQuestion()!.correctChoiceIndex,
+      this.game()!.players
+    );
+  }
+} else {
         this.timeLeft.set(current - 1);
       }
     }, 1000);
@@ -451,37 +495,37 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       .getAnswersForQuestion(this.gameId, questionIndex)
       .subscribe(a => this.answers.set(a));
   }
+async submitAnswer(choiceIndex: number) {
+  if (this.submitting() || this.isAdmin()) return;
 
-  async submitAnswer(choiceIndex: number) {
-    if (this.hasAnswered() || this.submitting() || this.isAdmin()) return;
-    this.selectedChoice.set(choiceIndex);
-    this.submitting.set(true);
-    try {
-      await this.gameService.submitAnswer(
-        this.gameId,
-        this.game()!.currentQuestionIndex,
-        choiceIndex
-      );
-      this.hasAnswered.set(true);
-    } finally {
-      this.submitting.set(false);
-    }
-  }
+  this.selectedChoice.set(choiceIndex);
+  this.submitting.set(true);
 
-  async nextQuestion() {
-    if (this.isLastQuestion()) {
-      await this.gameService.endGame(this.gameId);
-    } else {
-      await this.gameService.nextQuestion(
-        this.gameId,
-        this.game()!.currentQuestionIndex + 1
-      );
-    }
+  try {
+    await this.gameService.submitAnswer(
+      this.gameId,
+      this.game()!.currentQuestionIndex,
+      choiceIndex
+    );
+  } finally {
+    this.submitting.set(false);
   }
+}
+async nextQuestion() {
+  if (this.isLastQuestion()) {
+    await this.gameService.endGame(this.gameId);
+  } else {
+    await this.gameService.goToNextQuestion(
+      this.gameId,
+      this.game()!.currentQuestionIndex + 1
+    );
+  }
+}
 
   ngOnDestroy() {
     this.sub?.unsubscribe();
     this.answersSub?.unsubscribe();
     clearInterval(this.timerInterval);
+    this.scoresSub?.unsubscribe();
   }
 }
