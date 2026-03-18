@@ -55,6 +55,7 @@ export class GameWaitingComponent  implements OnInit {
   async startGame() {
     const gameId = this.game()!.id;
     this.starting.set(true);
+    console.log('startGame called');
     try {
       await this.gameService.startGame(gameId);
       this.router.navigate(['/game', gameId, 'play']);

@@ -11,28 +11,20 @@
       <ion-spinner name="crescent" />
     } @else {
 
-      <!-- Status badge -->
       <div class="badge">
         <div class="dot"></div>
         Waiting for players
       </div>
 
-      <!-- Entry code -->
       <div class="code-card">
         <div class="code-eyebrow">Entry Code</div>
         <div class="code-digits">{{ game()!.entryCode }}</div>
-        <ion-button
-          fill="outline"
-          size="small"
-          [class.copied]="copied()"
-          (click)="copyCode()"
-        >
+        <ion-button fill="outline" size="small" [class.copied]="copied()" (click)="copyCode()">
           <ion-icon slot="start" [name]="copied() ? 'checkmark-outline' : 'copy-outline'" />
           {{ copied() ? 'Copied!' : 'Copy code' }}
         </ion-button>
       </div>
 
-      <!-- Players -->
       <div class="players-card">
         <div class="players-header">
           <span class="players-label">
@@ -41,7 +33,6 @@
           </span>
           <span class="players-count">{{ game()!.players.length }} joined</span>
         </div>
-
         <div class="players-list">
           @if (game()!.players.length === 0) {
             <div class="empty">Waiting for players…</div>
@@ -53,25 +44,23 @@
             </div>
           }
         </div>
+      </div>
 
-        
-  @if (game()) {
-  <div class="qr-wrapper">
-    <qrcode
-      [qrdata]="game()!.entryCode"
-      [width]="160"
-      [errorCorrectionLevel]="'M'"
-    />
-    <p class="qr-hint">Scan to join</p>
-  </div>
-}
+      <!-- QR outside players-card -->
+      <div class="qr-wrapper">
+        <qrcode
+          [qrdata]="game()!.entryCode"
+          [width]="160"
+          [errorCorrectionLevel]="'M'"
+        />
+        <p class="qr-hint">Scan to join</p>
       </div>
 
       <!-- Start button -->
       <ion-button
         expand="block"
         class="start-btn"
-        [disabled]="game()!.players.length === 0 || starting()"
+        [disabled]="starting()"
         (click)="startGame()"
       >
         @if (starting()) {

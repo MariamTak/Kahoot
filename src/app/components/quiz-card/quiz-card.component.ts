@@ -61,8 +61,8 @@ export class QuizCard {
     event.preventDefault();
 
     this.loading.set(true);
-    try {
-      const gameId = await this.gameService.createGame(this.quiz().id);  
+    try {  
+      const gameId = await this.gameService.createGame(this.quiz().id);
       this.router.navigate(['/game-lobby', gameId]);  
     } catch (err) {
       console.error('Impossible de créer le game', err);

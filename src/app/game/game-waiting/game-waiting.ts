@@ -4,13 +4,14 @@ import {
   IonContent, IonHeader, IonTitle, IonToolbar,
   IonButton, IonIcon, IonSpinner, IonFooter
 } from '@ionic/angular/standalone';
-import { Subscription } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { GameService } from 'src/app/services/game';
 import { Game } from 'src/app/models/game';
 import { addIcons } from 'ionicons';
 import { playOutline, copyOutline, checkmarkOutline, peopleOutline } from 'ionicons/icons';
 import { QRCodeComponent } from 'angularx-qrcode';
 import { PageFooter } from 'src/app/components/page-footer/page-footer.component';
+import { AuthService } from 'src/app/services/auth';
 
 @Component({
   selector: 'game-waiting-page',
@@ -86,7 +87,7 @@ import { PageFooter } from 'src/app/components/page-footer/page-footer.component
       <!-- Start button -->
       <button
         class="kh-start-btn"
-        [disabled]="game()!.players.length < 2 || starting()"
+        [disabled]="game()!.players.length < 1 || starting()"
         (click)="startGame()"
       >
         @if (starting()) {
@@ -407,6 +408,9 @@ export class GameWaitingPage implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private gameService = inject(GameService);
+  private authService = inject(AuthService);
+  isAdmin  = signal(false);
+  myAlias  = signal('');
 
   game = signal<Game | null>(null);
   starting = signal(false);
@@ -418,13 +422,32 @@ export class GameWaitingPage implements OnInit, OnDestroy {
     addIcons({ playOutline, copyOutline, checkmarkOutline, peopleOutline });
   }
 
-  ngOnInit() {
-    const gameId = this.route.snapshot.paramMap.get('id')!;
-    this.sub = this.gameService.getGame(gameId).subscribe((game) => {
-      this.game.set(game);
-    });
-  }
+ async ngOnInit() {
 
+  const gameId = this.route.snapshot.paramMap.get('id')!;
+
+  // Fetch user ONCE before subscribing
+  const user = await firstValueFrom(this.authService.getConnectedUser());
+
+
+  this.sub = this.gameService.getGame(gameId).subscribe((game) => {
+    this.game.set(game);
+
+    // Role detection — runs on every update but user is already resolved
+    this.isAdmin.set(user?.uid === game.adminId);
+
+    // Track player's own alias for leaveGame
+    const me = game.players.find(p => p.uid === user?.uid);
+    if (me) this.myAlias.set(me.alias);
+
+    // Auto-redirect when admin starts the game
+    if (game.status === 'in-progress') {
+      this.router.navigate(['/game', gameId, 'play']);
+    }
+
+  });
+
+}
   async copyCode() {
     await navigator.clipboard.writeText(this.game()!.entryCode);
     this.copied.set(true);
