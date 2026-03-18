@@ -8,6 +8,7 @@ import {
   Firestore,
 } from '@angular/fire/firestore';
 import { User } from '@angular/fire/auth';
+import { docData } from 'rxfire/firestore';
 
 export interface UserWithAlias extends User {
   alias: string;
@@ -32,4 +33,8 @@ export class UserService {
       idField: 'id',
     }) as Observable<UserWithAlias[]>;
   }
+  getById(uid: string): Observable<UserWithAlias | undefined> {
+  const userDoc = doc(this.firestore, `users/${uid}`);
+  return docData(userDoc) as Observable<UserWithAlias | undefined>;
+}
 }
