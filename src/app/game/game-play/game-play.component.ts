@@ -68,6 +68,13 @@ import { arrowForwardOutline, trophyOutline, peopleOutline } from 'ionicons/icon
           <!-- Question -->
           <div class="kh-question-card">
             <p class="kh-question-text">{{ currentQuestion()!.text }}</p>
+             @if (currentQuestion()!.imageUrl) {
+                          <img
+                            [src]="currentQuestion()!.imageUrl"
+                            style="width:100%; height:160px; object-fit:cover; border-radius:10px; margin: 8px 0;"
+                          />
+                        }
+            
           </div>
 
           <!-- Choices -->
@@ -104,7 +111,7 @@ import { arrowForwardOutline, trophyOutline, peopleOutline } from 'ionicons/icon
                     {{ answersCount() }} / {{ game()!.players.length }}
                   </span>
                 </div>
-                <div class="kh-players-list">
+                <!-- <div class="kh-players-list">
                   @if (answersCount() === 0) {
                     <div class="kh-empty">Waiting for answers…</div>
                   }
@@ -114,7 +121,7 @@ import { arrowForwardOutline, trophyOutline, peopleOutline } from 'ionicons/icon
                       <span class="kh-player-name">{{ answer.uid }}</span>
                     </div>
                   }
-                </div>
+                </div> -->
               </div>
 
               <button class="kh-next-btn" (click)="nextQuestion()">
@@ -416,7 +423,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       }
 
       if (game.status === 'finished') {
-        this.router.navigate(['/game', this.gameId, 'results']);
+        this.router.navigate(['/game', this.gameId, 'scoreboard']);
       }
     });
 
@@ -466,6 +473,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     } finally {
       this.submitting.set(false);
     }
+
   }
 
   async nextQuestion() {

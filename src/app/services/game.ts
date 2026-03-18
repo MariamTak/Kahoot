@@ -120,7 +120,7 @@ export class GameService {
   async submitAnswer(
     gameId: string,
     questionIndex: number,
-    choiceIndex: number
+    choiceIndex: number, 
   ): Promise<void> {
     const user = await firstValueFrom(
       this.authService.getConnectedUser().pipe(filter(u => u !== null))
@@ -159,4 +159,7 @@ export class GameService {
     const snap = await getDoc(answerRef);
     return snap.exists();
   }
+
+
+  
 }
