@@ -14,6 +14,7 @@ import {
 } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { UserService } from './user';
 import { ToastController } from '@ionic/angular/standalone';
 import { SocialLogin } from '@capgo/capacitor-social-login';
@@ -79,17 +80,25 @@ async register(email: string, password: string, alias: string): Promise<void> {
 async signInWithGoogle(): Promise<void> {
   let toast: HTMLIonToastElement | undefined;
   try {
+    let firebaseUser;
     if (Capacitor.isNativePlatform()) {
-      const result = await SocialLogin.login({
-        provider: 'google',
-        options: {} 
-      });
+      const result = await SocialLogin.login({ provider: 'google', options: {} });
       const googleResult = result.result as any;
       const credential = GoogleAuthProvider.credential(googleResult.idToken);
-      await signInWithCredential(this.auth, credential);
+      const userCred = await signInWithCredential(this.auth, credential);
+      firebaseUser = userCred.user;
     } else {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(this.auth, provider);
+      const userCred = await signInWithPopup(this.auth, provider);
+      firebaseUser = userCred.user;
+    }
+    const existing = await firstValueFrom(this.userService.getById(firebaseUser.uid));
+    if (!existing) {
+      const plainUser = JSON.parse(JSON.stringify(firebaseUser));
+      await this.userService.create({
+        ...plainUser,
+        alias: firebaseUser.displayName ?? firebaseUser.email ?? firebaseUser.uid,
+      });
     }
     this.router.navigateByUrl('/');
     toast = await this.toastController.create({

@@ -7,6 +7,7 @@ import {
   SchemaPathTree,
   validate,
 } from '@angular/forms/signals';
+import { QuestionImageComponent } from 'src/app/question-image/question-image.component';
 import {
   IonHeader,
   IonToolbar,
@@ -60,125 +61,154 @@ function QuestionSchema(question: SchemaPathTree<Question>) {
   selector: 'create-quiz-modal',
   template: `
     <form id="createQuizForm" (submit)="confirm($event)" novalidate>
-      <ion-header>
-        <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-button
-              data-testid="cancel-create-quiz-button"
-              color="medium"
-              (click)="cancel()"
-            >
-              Cancel
-            </ion-button>
-          </ion-buttons>
-          <ion-title>
-            <ion-input
-              aria-label="Enter the quiz title"
-              [formField]="quizForm.title"
-              placeholder="Guess the capital city"
-              type="text"
-            ></ion-input>
-          </ion-title>
-          <ion-buttons slot="end">
-            <ion-button
-              data-testid="confirm-create-quiz-button"
-              type="submit"
-              form="createQuizForm"
-              [strong]="true"
-              [disabled]="quizForm().invalid()"
-            >
-              Confirm
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content class="ion-padding" [fullscreen]="true">
-        <ion-list>
-          <ion-item>
-            <ion-textarea
-              labelPlacement="stacked"
-              label="Enter the quiz description"
-              [formField]="quizForm.description"
-              placeholder="Guess the capital city of various countries around the world."
-            ></ion-textarea>
-          </ion-item>
-        </ion-list>
-        <ion-grid>
-          <ion-row>
-            @for (question of quizForm.questions; track $index) {
-              <ion-col size="12">
-                <ion-card>
-                  <ion-button
-                    fill="clear"
-                    color="medium"
-                    class="ion-float-end"
-                    (click)="removeQuestion(question().value().id)"
-                  >
-                    <ion-icon name="remove-outline"></ion-icon>
-                  </ion-button>
-                  <ion-card-header>
-                    <ion-card-title>
-                      <ion-input
-                        aria-label="Enter the question text"
-                        [formField]="question.text"
-                        placeholder="Question"
-                      ></ion-input>
-                    </ion-card-title>
-                  </ion-card-header>
-                  <ion-card-content>
-                    <ion-radio-group [formField]="question.correctChoiceIndex">
-                      <ion-list lines="none">
-                        <ion-item>
-                          <ion-label>Choices</ion-label>
-                          <ion-label slot="end">Correct</ion-label>
-                        </ion-item>
-                        @for (
-                          choice of question.choices;
-                          track $index;
-                          let first = $first;
-                          let idx = $index
-                        ) {
-                          <ion-item>
-                            <ion-input
-                              aria-label="Enter the choice text"
-                              [formField]="choice.text"
-                              placeholder="Choice"
-                            ></ion-input>
-                            <ion-radio slot="end" [value]="idx"></ion-radio>
-                            @if (!first) {
-                              <ion-button
-                                fill="clear"
-                                slot="end"
-                                color="medium"
-                                (click)="
-                                  removeChoice(question().value().id, idx)
-                                "
-                              >
-                                <ion-icon name="remove-outline"></ion-icon>
-                              </ion-button>
-                            } @else {
-                              <span slot="end" style="width: 2rem;"></span>
-                            }
-                          </ion-item>
-                        }
-                      </ion-list>
-                    </ion-radio-group>
-                    <ion-button
-                      (click)="addChoice(question().value().id)"
-                      expand="full"
-                      >Add choice
-                    </ion-button>
-                  </ion-card-content>
-                </ion-card>
-              </ion-col>
-            }
-          </ion-row>
-        </ion-grid>
-        <ion-button (click)="addQuestion()" expand="full">
-          Add question
+  <ion-header>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button data-testid="cancel-create-quiz-button" color="medium" (click)="cancel()">
+          Cancel
         </ion-button>
-      </ion-content>
-    </form>
+      </ion-buttons>
+      <ion-title>
+        <ion-input
+          aria-label="Enter the quiz title"
+          [formField]="quizForm.title"
+          placeholder="Guess the capital city"
+          type="text"
+        ></ion-input>
+      </ion-title>
+     <ion-buttons slot="end">
+  <ion-button
+    data-testid="confirm-create-quiz-button"
+    [strong]="true"
+    [disabled]="quizForm().invalid()"
+    (click)="confirm($event)"
+  >
+    Confirm
+  </ion-button>
+</ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding" [fullscreen]="true">
+    <ion-list>
+      <ion-item>
+        <ion-textarea
+          labelPlacement="stacked"
+          label="Enter the quiz description"
+          [formField]="quizForm.description"
+          placeholder="Guess the capital city of various countries around the world."
+        ></ion-textarea>
+      </ion-item>
+    </ion-list>
+
+    <ion-grid>
+      <ion-row>
+        @for (question of quizForm.questions; track $index; let qi = $index) {
+          <ion-col size="12">
+            <ion-card>
+
+              <ion-card-header>
+                <ion-row style="align-items: center;">
+                  <ion-col>
+                    <span style="background:#46178F; color:#fff; font-size:13px; font-weight:500; padding:4px 14px; border-radius:20px;">
+                      Q{{ qi + 1 }}
+                    </span>
+                  </ion-col>
+                  <ion-col size="auto">
+                    <!-- ✅ logique inchangée -->
+                    <ion-button fill="outline" color="danger" size="small"
+                      (click)="removeQuestion(question().value().id)">
+                      Remove
+                    </ion-button>
+                  </ion-col>
+                </ion-row>
+                <ion-input
+                  aria-label="Enter the question text"
+                  [formField]="question.text"
+                  placeholder="Question"
+                  style="margin-top:10px; font-size:16px; font-weight:500;"
+                ></ion-input>
+             
+                      <app-question-image
+  [questionId]="question().value().id"
+  [imageUrl]="question().value().imageUrl"
+  (imageUploaded)="onImageUploaded($event, question().value().id)"
+  (imageRemoved)="onImageRemoved(question().value().id)"
+/>
+                
+              </ion-card-header>
+
+              <ion-card-content>
+                <ion-radio-group [formField]="question.correctChoiceIndex">
+                  <ion-list lines="none">
+
+                    @for (choice of question.choices; track $index; let first = $first; let idx = $index) {
+                      <ion-item
+                        [style]="'--background:' + ['#E21B3C','#1368CE','#D89E00','#26890C'][idx % 4] + '; --color:#fff; border-radius:10px; margin-bottom:8px;'"
+                      >
+                        <!-- Icone Kahoot -->
+                        @switch (idx % 4) {
+                          @case (0) {
+                            <svg slot="start" width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,15 1,15" fill="white"/></svg>
+                          }
+                          @case (1) {
+                            <svg slot="start" width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="14" height="14" fill="white"/></svg>
+                          }
+                          @case (2) {
+                            <svg slot="start" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="white"/></svg>
+                          }
+                          @default {
+                            <svg slot="start" width="16" height="16" viewBox="0 0 16 16"><polygon points="1,8 8,1 15,8 8,15" fill="white"/></svg>
+                          }
+                        }
+
+                        <ion-input
+                          aria-label="Enter the choice text"
+                          [formField]="choice.text"
+                          placeholder="Choice"
+                          style="--color:#fff; --placeholder-color:rgba(255,255,255,0.7);"
+                        ></ion-input>
+
+                        <ion-radio slot="end" [value]="idx"
+                          style="--color:#fff; --color-checked:#fff;">
+                        </ion-radio>
+
+                        @if (!first) {
+                          <!-- ✅ logique inchangée -->
+                          <ion-button fill="clear" slot="end"
+                            style="--color:#fff;"
+                            (click)="removeChoice(question().value().id, idx)">
+                            <ion-icon name="remove-outline"></ion-icon>
+                          </ion-button>
+                        } @else {
+                          <span slot="end" style="width: 2rem;"></span>
+                        }
+
+                      </ion-item>
+                    }
+
+                  </ion-list>
+                </ion-radio-group>
+
+                <!-- ✅ logique inchangée -->
+                <ion-button (click)="addChoice(question().value().id)" expand="full" fill="outline">
+                  + Add choice
+                </ion-button>
+              </ion-card-content>
+
+            </ion-card>
+          </ion-col>
+        }
+      </ion-row>
+    </ion-grid>
+
+    <ion-button (click)="addQuestion()" expand="full"
+      style="--background:#46178F; --color:#fff; margin-top:8px;">
+      + Add question
+    </ion-button>
+
+  </ion-content>
+</form>
   `,
   imports: [
     IonHeader,
@@ -203,12 +233,14 @@ function QuestionSchema(question: SchemaPathTree<Question>) {
     IonRadioGroup,
     IonLabel,
     IonIcon,
-    FormField
+    QuestionImageComponent
+
 ],
 })
 export class CreateQuizModal {
   private readonly modalCtrl = inject(ModalController);
   private readonly quizService = inject(QuizService);
+  
 
   constructor() {
     addIcons({ removeOutline });
@@ -298,4 +330,28 @@ export class CreateQuizModal {
 
     this.modalCtrl.dismiss(quizFormValue);
   }
+
+  onImageUploaded(url: string, questionId: string) {
+  this._quiz.update(q => ({
+    ...q,
+    questions: q.questions.map(question =>
+      question.id === questionId
+        ? { ...question, imageUrl: url }
+        : question
+    )
+  }));
+  this.quizForm().markAsDirty();
+}
+
+onImageRemoved(questionId: string) {
+  this._quiz.update(q => ({
+    ...q,
+    questions: q.questions.map(question =>
+      question.id === questionId
+        ? { ...question, imageUrl: undefined }
+        : question
+    )
+  }));
+  this.quizForm().markAsDirty();
+}
 }

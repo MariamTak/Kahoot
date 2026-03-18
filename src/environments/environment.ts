@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  firebaseConfig: {
+    firebaseConfig: {
     apiKey: "AIzaSyD9aWd1pG6UskU5ymc5IWyaefUHyXilQpQ",
     authDomain: "kahoot-ca9d7.firebaseapp.com",
     projectId: "kahoot-ca9d7",
