@@ -106,6 +106,12 @@ export class GameService {
     });
   }
 
+  async startQuestion(gameId: string, questionIndex: number): Promise<void> {
+  await updateDoc(doc(this.firestore, 'games', gameId), {
+    [`questionStartTimes.${questionIndex}`]: new Date(),
+  });
+}
+
   private generateEntryCode(length = 4): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     return Array.from({ length }, () =>
@@ -120,27 +126,34 @@ export class GameService {
     });
   }
   async submitAnswer(
-    gameId: string,
-    questionIndex: number,
-    choiceIndex: number
-  ): Promise<void> {
-    const user = await firstValueFrom(
-      this.authService.getConnectedUser().pipe(filter(u => u !== null))
-    );
-    if (!user) throw new Error('Not authenticated');
+  gameId: string,
+  questionIndex: number,
+  choiceIndex: number
+): Promise<void> {
+  const user = await firstValueFrom(
+    this.authService.getConnectedUser().pipe(filter(u => u !== null))
+  );
+  if (!user) throw new Error('Not authenticated');
 
-    const answerRef = doc(
-      this.firestore,
-      `games/${gameId}/answers/${questionIndex}_${user.uid}`
-    );
+  const answerRef = doc(
+    this.firestore,
+    `games/${gameId}/answers/${questionIndex}_${user.uid}`
+  );
 
-    await setDoc(answerRef, {
-      uid: user.uid,
-      questionIndex,
-      choiceIndex,
-      answeredAt: new Date(),
-    });
-  }
+  const existing = await getDoc(answerRef);
+  if (existing.exists()) return;
+
+  const gameDoc = await getDoc(doc(this.firestore, 'games', gameId));
+  const questionStartTime = gameDoc.data()?.[`questionStartTimes.${questionIndex}`];
+  
+  await setDoc(answerRef, {
+    uid: user.uid,
+    questionIndex,
+    choiceIndex,
+    answeredAt: new Date(),
+    questionStartTime: questionStartTime || new Date(), 
+  });
+}
 
   getAnswersForQuestion(gameId: string, questionIndex: number): Observable<any[]> {
     const answersRef = collection(this.firestore, `games/${gameId}/answers`);
@@ -171,18 +184,28 @@ export class GameService {
   const q = query(answersRef, where('questionIndex', '==', questionIndex));
   const answersSnap = await getDocs(q);
   const answers = answersSnap.docs.map(d => d.data());
+  
+  console.log('All answers for question:', answers); // Debug log
 
   const batch = writeBatch(this.firestore);
 
   for (const player of players) {
     const answer = answers.find(a => a['uid'] === player.uid);
     const isCorrect = answer?.['choiceIndex'] === correctChoiceIndex;
+    
+    console.log(`Player ${player.alias}:`, { 
+      answer: answer?.['choiceIndex'], 
+      correct: correctChoiceIndex, 
+      isCorrect 
+    }); // Debug log
 
     let questionScore = 0;
     if (isCorrect && answer) {
       const answeredAt = answer['answeredAt']?.toDate?.() ?? new Date();
-      const secondsTaken = Math.min(30, (answeredAt.getTime() - Date.now() + 30000) / 1000);
-      questionScore = Math.round(1000 - (secondsTaken / 30) * 500);
+      const questionStartTime = answer['questionStartTime']?.toDate?.() ?? answeredAt;
+      const timeElapsed = Math.min(30, (answeredAt.getTime() - questionStartTime.getTime()) / 1000);
+      questionScore = Math.max(0, Math.round(1000 - (timeElapsed / 30) * 500));
+      console.log(`Score for ${player.alias}: ${questionScore} (time: ${timeElapsed}s)`); // Debug log
     }
 
     const scoreRef = doc(this.firestore, `games/${gameId}/scores/${player.uid}`);
@@ -209,6 +232,12 @@ async goToNextQuestion(gameId: string, nextIndex: number): Promise<void> {
     currentQuestionIndex: nextIndex,
     currentStatus: 'in-progress',
   });
+}
+async getAnswersForQuestionSnapshot(gameId: string, questionIndex: number): Promise<any[]> {
+  const answersRef = collection(this.firestore, `games/${gameId}/answers`);
+  const q = query(answersRef, where('questionIndex', '==', questionIndex));
+  const answersSnapshot = await getDocs(q);
+  return answersSnapshot.docs.map(doc => doc.data());
 }
 
 getScores(gameId: string): Observable<PlayerScore[]> {
