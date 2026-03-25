@@ -23,7 +23,7 @@ import { trophyOutline, homeOutline, medalOutline } from 'ionicons/icons';
       <div class="gr-page">
 
         <div class="gr-hero">
-          <h1 class="gr-title">Game Over!</h1>
+          <h1 class="gr-title">Well played!</h1>
           <p class="gr-subtitle">Final Results</p>
         </div>
 

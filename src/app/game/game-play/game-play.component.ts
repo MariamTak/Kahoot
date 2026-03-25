@@ -517,8 +517,8 @@ async nextQuestion() {
     await this.gameService.endGame(this.gameId);
   } else {
     const nextIndex = this.game()!.currentQuestionIndex + 1;
-    await this.gameService.startQuestion(this.gameId, nextIndex);
     await this.gameService.goToNextQuestion(this.gameId, nextIndex);
+    this.subscribeToAnswers(nextIndex);
   }
 }
 
