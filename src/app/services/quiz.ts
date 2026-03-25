@@ -95,6 +95,7 @@ getAll(): Observable<Quiz[]> {
       map((questions) => ({
         ...quiz,
         questions: questions as Question[],
+
       }))
     );
   }
