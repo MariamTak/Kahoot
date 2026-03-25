@@ -1,10 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal ,  } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+
 import {
   IonContent, IonFooter, IonIcon, IonSpinner,
-  ModalController,
+  ModalController,IonButton
 } from '@ionic/angular/standalone';
 import { QuizService } from '../services/quiz';
 import { PageHeader } from '../components/page-header/page-header.component';
@@ -19,7 +21,7 @@ import { createOutline, checkmarkCircleOutline } from 'ionicons/icons';
   standalone: true,
   imports: [
     CommonModule, IonContent, IonFooter,
-    IonIcon, IonSpinner, PageFooter, PageHeader,
+    IonIcon, IonSpinner, PageFooter, PageHeader,IonButton
   ],
   template: `
     <page-header [translucent]="true">Quiz Details</page-header>
@@ -43,10 +45,10 @@ import { createOutline, checkmarkCircleOutline } from 'ionicons/icons';
                 <ion-icon name="create-outline"></ion-icon>
                 Update Quiz
               </button>
-             <button class="kh-update-btn">
-                <ion-icon name="create-outline"></ion-icon>
-                Delete Quiz
-              </button>
+           <ion-button color="danger" expand="block" (click)="deleteQuiz(quiz.id)">
+  <ion-icon name="trash-outline" slot="start"></ion-icon>
+  Delete Quiz
+</ion-button>
             </div>
 
             @if (quiz.questions.length) {
@@ -252,6 +254,8 @@ export class QuizDetailPage {
 
   protected quiz = toSignal(this.quiz$, { initialValue: null });
   protected isLoading = signal(true);
+  private router = inject(Router);
+  
 
   constructor() {
     addIcons({ createOutline, checkmarkCircleOutline });
@@ -260,7 +264,15 @@ export class QuizDetailPage {
       error: () => this.isLoading.set(false),
     });
   }
-
+async deleteQuiz(id: string) {
+  try {
+    await this.quizService.deleteQuiz(id);
+    console.log('Quiz deleted');
+    this.router.navigate(['/home']); 
+  } catch (error) {
+    console.error(error);
+  }
+}
   async openUpdateModal(quiz: Quiz) {
     const modal = await this.modalCtrl.create({
       component: QuizUpdateModalComponent,

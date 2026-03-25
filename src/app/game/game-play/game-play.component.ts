@@ -13,6 +13,7 @@ import {
   IonIcon, IonSpinner
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
+import { triangle, star, ellipse, square } from 'ionicons/icons';
 import { arrowForwardOutline, trophyOutline, peopleOutline } from 'ionicons/icons';
 import { PlayerScore } from 'src/app/models/player';
 import { QuestionBoardComponent } from './question-board';
@@ -84,10 +85,12 @@ import { QuestionBoardComponent } from './question-board';
               <button
                 class="kh-choice-btn"
                 [class.selected]="selectedChoice() === $index"
-                [disabled]="hasAnswered() || submitting() || isAdmin()"
+                [disabled]="submitting() || isAdmin()"
                 (click)="submitAnswer($index)"
               >
-                <span class="kh-choice-letter">{{ 'ABCD'[$index] }}</span>
+              <span class="kh-choice-icon">
+        <ion-icon [name]="['triangle', 'star', 'ellipse', 'square'][$index]"></ion-icon>
+      </span>
                 <span class="kh-choice-text">{{ choice.text }}</span>
               </button>
             }
@@ -98,7 +101,7 @@ import { QuestionBoardComponent } from './question-board';
   <app-question-board
     [question]="currentQuestion()!"
     [scores]="scores()"
-    [answers]="answers()"
+    [answers]="boardAnswers()"
     [players]="game()!.players"
     [isAdmin]="isAdmin()"
     [isLast]="isLastQuestion()"
@@ -274,14 +277,13 @@ import { QuestionBoardComponent } from './question-board';
       outline: 3px solid white;
       transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.25);
     }
-    .kh-choice-letter {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: rgba(0,0,0,0.2);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.9rem; font-weight: 900; flex-shrink: 0;
-    }
+        .kh-choice-icon {
+  width: 32px; height: 32px; 
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
 
-    /* Waiting banner */
     .kh-waiting-banner {
       display: flex; align-items: center; gap: 12px;
       background: rgba(255,255,255,0.12);
@@ -392,8 +394,9 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private scoresSub!: Subscription;
   game = signal<Game | null>(null);
   quiz = signal<Quiz | null>(null);
+  boardAnswers = signal<any[]>([]);
+
   selectedChoice = signal<number | null>(null);
-  hasAnswered = signal(false);
   submitting = signal(false);
   isAdmin = signal(false);
   answers = signal<any[]>([]);
@@ -422,7 +425,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private answersSub!: Subscription;
 
   constructor() {
-    addIcons({ arrowForwardOutline, trophyOutline, peopleOutline });
+  addIcons({ arrowForwardOutline, trophyOutline, peopleOutline, triangle, star, ellipse, square });
   }
 
   async ngOnInit() {
@@ -445,49 +448,53 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
       if (prevIndex !== undefined && prevIndex !== game.currentQuestionIndex) {
         this.selectedChoice.set(null);
-        this.hasAnswered.set(false);
         this.subscribeToAnswers(game.currentQuestionIndex);
         this.startTimer();
       }
 
       if (game.status === 'finished') {
-        this.router.navigate(['/game', this.gameId, 'scoreboard']);
+        this.router.navigate(['/game', this.gameId, 'results']);
+      }
+      if (game.currentStatus === 'done') {
+        this.boardAnswers.set(this.answers());
       }
     });
 
     this.subscribeToAnswers(0);
   }
 
-  private startTimer() {
-    clearInterval(this.timerInterval);
-    this.timeLeft.set(30);
-    this.timerInterval = setInterval(async () => {
-      const current = this.timeLeft();
-      
-  if (current <= 1) {
+private startTimer() {
   clearInterval(this.timerInterval);
-  this.timeLeft.set(0);
-  if (!this.isAdmin() && !this.hasAnswered()) {
-    this.hasAnswered.set(true);
-    await this.gameService.submitAnswer(
-      this.gameId,
-      this.game()!.currentQuestionIndex,
-      -1
-    );
-  }
-  if (this.isAdmin()) {
-    await this.gameService.showQuestionResults(
-      this.gameId,
-      this.game()!.currentQuestionIndex,
-      this.currentQuestion()!.correctChoiceIndex,
-      this.game()!.players
-    );
-  }
-} else {
-        this.timeLeft.set(current - 1);
+  this.timeLeft.set(30);
+  this.timerInterval = setInterval(async () => {
+    const current = this.timeLeft();
+    
+    if (current <= 1) {
+      clearInterval(this.timerInterval);
+      this.timeLeft.set(0);
+      if (!this.isAdmin() && this.selectedChoice() === null) {
+        await this.gameService.submitAnswer(
+          this.gameId,
+          this.game()!.currentQuestionIndex,
+          -1
+        );
       }
-    }, 1000);
-  }
+      if (this.isAdmin()) {
+        // Wait a moment to ensure all answers are collected
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        await this.gameService.showQuestionResults(
+          this.gameId,
+          this.game()!.currentQuestionIndex,
+          this.currentQuestion()!.correctChoiceIndex,
+          this.game()!.players
+        );
+      }
+    } else {
+      this.timeLeft.set(current - 1);
+
+    }
+  }, 1000);
+}
 
   private subscribeToAnswers(questionIndex: number) {
     this.answersSub?.unsubscribe();
@@ -512,13 +519,13 @@ async submitAnswer(choiceIndex: number) {
   }
 }
 async nextQuestion() {
+  this.boardAnswers.set([]);
   if (this.isLastQuestion()) {
     await this.gameService.endGame(this.gameId);
   } else {
-    await this.gameService.goToNextQuestion(
-      this.gameId,
-      this.game()!.currentQuestionIndex + 1
-    );
+    const nextIndex = this.game()!.currentQuestionIndex + 1;
+    await this.gameService.goToNextQuestion(this.gameId, nextIndex);
+    this.subscribeToAnswers(nextIndex);
   }
 }
 
