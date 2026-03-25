@@ -5,15 +5,12 @@
 export const environment = {
   production: false,
   firebaseConfig: {
-    
-  apiKey: "AIzaSyD9aWd1pG6UskU5ymc5IWyaefUHyXilQpQ",
-  authDomain: "kahoot-ca9d7.firebaseapp.com",
-  projectId: "kahoot-ca9d7",
-  storageBucket: "kahoot-ca9d7.firebasestorage.app",
-  messagingSenderId: "900276575374",
-  appId: "1:900276575374:web:5b77b85f67c9d55a83bddf"
-
-}
+    apiKey: "AIzaSyClh0saN6sga8aTWyU2TtW7JNJ8ZiaiPig",
+  authDomain: "kahoot-1372e.firebaseapp.com",
+  projectId: "kahoot-1372e",
+  storageBucket: "kahoot-1372e.firebasestorage.app",
+  messagingSenderId: "847025104477",
+  appId: "1:847025104477:web:d9f1b7f3afe6f79c5bcfb4"}
 };
 
 /*
