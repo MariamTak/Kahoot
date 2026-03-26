@@ -147,6 +147,7 @@ import { logoGoogle, mailOutline, lockClosedOutline, personOutline } from 'ionic
     }
 
     .auth-title {
+ 
       color: white; font-size: 1.4rem; font-weight: 900;
       margin: 0 0 24px; text-align: center;
     }

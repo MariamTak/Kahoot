@@ -1,12 +1,10 @@
-import { Component, inject, signal ,  } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-
+import { AlertController, ToastController, ModalController } from '@ionic/angular/standalone';
 import {
-  IonContent, IonFooter, IonIcon, IonSpinner,
-  ModalController,IonButton
+  IonContent, IonFooter, IonIcon, IonSpinner, IonButton
 } from '@ionic/angular/standalone';
 import { QuizService } from '../services/quiz';
 import { PageHeader } from '../components/page-header/page-header.component';
@@ -14,14 +12,14 @@ import { PageFooter } from '../components/page-footer/page-footer.component';
 import { QuizUpdateModalComponent } from '../components/quiz-update-modal/quiz-update-modal.component';
 import { Quiz } from '../models/quiz';
 import { addIcons } from 'ionicons';
-import { createOutline, checkmarkCircleOutline } from 'ionicons/icons';
+import { createOutline, checkmarkCircleOutline, trashOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-quiz-detail',
   standalone: true,
   imports: [
     CommonModule, IonContent, IonFooter,
-    IonIcon, IonSpinner, PageFooter, PageHeader,IonButton
+    IonIcon, IonSpinner, PageFooter, PageHeader, IonButton,
   ],
   template: `
     <page-header [translucent]="true">Quiz Details</page-header>
@@ -45,10 +43,10 @@ import { createOutline, checkmarkCircleOutline } from 'ionicons/icons';
                 <ion-icon name="create-outline"></ion-icon>
                 Update Quiz
               </button>
-           <ion-button color="danger" expand="block" (click)="deleteQuiz(quiz.id)">
-  <ion-icon name="trash-outline" slot="start"></ion-icon>
-  Delete Quiz
-</ion-button>
+              <ion-button color="danger" expand="block" (click)="deleteQuiz(quiz.id)">
+                <ion-icon name="trash-outline" slot="start"></ion-icon>
+                Delete Quiz
+              </ion-button>
             </div>
 
             @if (quiz.questions.length) {
@@ -207,7 +205,6 @@ import { createOutline, checkmarkCircleOutline } from 'ionicons/icons';
       flex-shrink: 0;
     }
 
-    /* Shapes */
     .shape { display: block; }
     .triangle {
       width: 0; height: 0;
@@ -215,20 +212,9 @@ import { createOutline, checkmarkCircleOutline } from 'ionicons/icons';
       border-right: 8px solid transparent;
       border-bottom: 14px solid white;
     }
-    .diamond {
-      width: 13px; height: 13px;
-      background: white;
-      transform: rotate(45deg);
-    }
-    .circle {
-      width: 14px; height: 14px;
-      background: white;
-      border-radius: 50%;
-    }
-    .square {
-      width: 13px; height: 13px;
-      background: white;
-    }
+    .diamond { width: 13px; height: 13px; background: white; transform: rotate(45deg); }
+    .circle  { width: 14px; height: 14px; background: white; border-radius: 50%; }
+    .square  { width: 13px; height: 13px; background: white; }
 
     .kh-choice-text {
       color: white; font-size: 0.85rem; font-weight: 700;
@@ -242,51 +228,92 @@ import { createOutline, checkmarkCircleOutline } from 'ionicons/icons';
     }
     .kh-empty-title { color: white; font-size: 1.1rem; font-weight: 900; margin: 0; }
     .kh-empty-sub { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin: 0; }
-  `]
+  `],
 })
 export class QuizDetailPage {
   private readonly quizService = inject(QuizService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly modalCtrl = inject(ModalController);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly toastCtrl = inject(ToastController);
 
   private readonly quizId = this.route.snapshot.paramMap.get('id');
-  private quiz$ = this.quizService.getById(this.quizId!);
+  private readonly quiz$ = this.quizService.getById(this.quizId!);
 
   protected quiz = toSignal(this.quiz$, { initialValue: null });
   protected isLoading = signal(true);
-  private router = inject(Router);
-  
 
   constructor() {
-    addIcons({ createOutline, checkmarkCircleOutline });
+    addIcons({ createOutline, checkmarkCircleOutline, trashOutline });
     this.quiz$.subscribe({
       next: () => this.isLoading.set(false),
       error: () => this.isLoading.set(false),
     });
   }
-async deleteQuiz(id: string) {
-  try {
-    await this.quizService.deleteQuiz(id);
-    console.log('Quiz deleted');
-    this.router.navigate(['/home']); 
-  } catch (error) {
-    console.error(error);
+
+  async deleteQuiz(id: string) {
+    const alert = await this.alertCtrl.create({
+      header: 'Delete Quiz',
+      message: 'Are you sure you want to delete this quiz?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Delete',
+          role: 'destructive',
+          handler: async () => {
+            try {
+              await this.quizService.deleteQuiz(id);
+              await this.showToast('Quiz deleted successfully');
+              this.router.navigate(['/home']);
+            } catch {
+              await this.showToast('Failed to delete quiz');
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
-}
+
   async openUpdateModal(quiz: Quiz) {
     const modal = await this.modalCtrl.create({
       component: QuizUpdateModalComponent,
       componentProps: { quiz },
     });
     await modal.present();
+
     const { data, role } = await modal.onWillDismiss<Quiz>();
-    if (role === 'confirm' && data) {
-      const updatedQuiz: Quiz = {
-        ...data,
-        id: quiz.id,
-        ownerId: quiz.ownerId,
-      };
-      await this.quizService.updateQuiz(updatedQuiz);
-    }
+    if (role !== 'confirm' || !data) return;
+
+    const alert = await this.alertCtrl.create({
+      header: 'Update Quiz',
+      message: 'Save changes to this quiz?',
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        {
+          text: 'Save',
+          handler: async () => {
+            try {
+              const updatedQuiz: Quiz = {
+                ...data,
+                id: quiz.id,
+                ownerId: quiz.ownerId,
+              };
+              await this.quizService.updateQuiz(updatedQuiz);
+              await this.showToast('Quiz updated successfully');
+            } catch {
+              await this.showToast('Failed to update quiz');
+            }
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private async showToast(message: string) {
+    const toast = await this.toastCtrl.create({ message, duration: 1500 });
+    await toast.present();
   }
 }

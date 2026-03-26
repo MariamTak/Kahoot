@@ -25,6 +25,7 @@ import { Router } from '@angular/router';
             <ion-button shape="round" (click)="logout()">
               <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
             </ion-button>
+            
           </ion-buttons>
         }
       </ion-toolbar>
