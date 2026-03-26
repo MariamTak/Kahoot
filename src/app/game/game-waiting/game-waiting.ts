@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   IonContent, IonHeader, IonTitle, IonToolbar,
   IonButton, IonIcon, IonSpinner, IonFooter
+  
 } from '@ionic/angular/standalone';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { GameService } from 'src/app/services/game';
@@ -12,10 +13,12 @@ import { playOutline, copyOutline, checkmarkOutline, peopleOutline } from 'ionic
 import { QRCodeComponent } from 'angularx-qrcode';
 import { PageFooter } from 'src/app/components/page-footer/page-footer.component';
 import { AuthService } from 'src/app/services/auth';
+import { PageHeader } from 'src/app/components/page-header/page-header.component';
 
 @Component({
   selector: 'game-waiting-page',
   template: `
+<page-header [translucent]="true">Qahoot</page-header>
 <ion-content [fullscreen]="true">
   <div class="kh-page">
 
@@ -401,7 +404,7 @@ import { AuthService } from 'src/app/services/auth';
   standalone: true,
   imports: [
     IonContent, IonIcon, IonSpinner, IonFooter,
-    QRCodeComponent, PageFooter
+    QRCodeComponent, PageFooter , PageHeader 
   ],
 })
 export class GameWaitingPage implements OnInit, OnDestroy {

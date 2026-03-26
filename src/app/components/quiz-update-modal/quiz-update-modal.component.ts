@@ -29,9 +29,6 @@ import { removeOutline, addOutline } from 'ionicons/icons';
             Update
           </ion-button>
         </ion-buttons>
-
-        
-        
       </ion-toolbar>
     </ion-header>
 
@@ -42,26 +39,32 @@ import { removeOutline, addOutline } from 'ionicons/icons';
         <div class="kh-section">
           <div class="kh-section-label">Quiz Info</div>
           <div class="kh-field-card">
-            <ion-item lines="none" class="kh-item">
-              <ion-input
-                labelPlacement="stacked"
-                label="Title"
-                formControlName="title"
-                placeholder="Enter quiz title"
-                class="kh-input"
-              ></ion-input>
-            </ion-item>
+
+            <div class="kh-field-wrapper">
+              <label class="kh-field-label">Title</label>
+              <ion-item lines="none" class="kh-item kh-info-item">
+                <ion-input
+                  formControlName="title"
+                  placeholder="Enter quiz title"
+                  class="kh-input"
+                ></ion-input>
+              </ion-item>
+            </div>
+
             <div class="kh-divider"></div>
-            <ion-item lines="none" class="kh-item">
-              <ion-textarea
-                labelPlacement="stacked"
-                label="Description"
-                formControlName="description"
-                placeholder="Enter quiz description"
-                [rows]="3"
-                class="kh-input"
-              ></ion-textarea>
-            </ion-item>
+
+            <div class="kh-field-wrapper">
+              <label class="kh-field-label">Description</label>
+              <ion-item lines="none" class="kh-item kh-info-item">
+                <ion-textarea
+                  formControlName="description"
+                  placeholder="Enter quiz description"
+                  [rows]="3"
+                  class="kh-input"
+                ></ion-textarea>
+              </ion-item>
+            </div>
+
           </div>
         </div>
 
@@ -191,12 +194,57 @@ import { removeOutline, addOutline } from 'ionicons/icons';
       padding-left: 4px;
     }
 
-    /* Field card */
+    /* Quiz Info field card */
     .kh-field-card {
-      background: white; border-radius: 16px; overflow: hidden;
-      box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      overflow: hidden;
     }
-    .kh-divider { height: 1px; background: #eee; margin: 0 16px; }
+
+    .kh-field-wrapper {
+      padding: 12px 14px;
+    }
+
+    .kh-field-label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 6px;
+      font-family: var(--kh-font);
+    }
+
+    .kh-info-item {
+      --background: rgba(255,255,255,0.08);
+      --color: white;
+      --placeholder-color: rgba(255,255,255,0.35);
+      --border-radius: 10px;
+      --padding-start: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    /* Force white text inside Ionic shadow DOM */
+    ::ng-deep .kh-info-item input,
+    ::ng-deep .kh-info-item textarea {
+      color: white !important;
+      caret-color: white !important;
+    }
+
+    ::ng-deep .kh-info-item .native-input,
+    ::ng-deep .kh-info-item .native-textarea {
+      color: white !important;
+      caret-color: white !important;
+    }
+
+    .kh-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.12);
+      margin: 0 14px;
+    }
 
     /* Items */
     .kh-item {

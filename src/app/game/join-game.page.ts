@@ -11,10 +11,14 @@ import { firstValueFrom } from 'rxjs';
 import { Game } from '../models/game';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../services/user';
+import { PageHeader } from '../components/page-header/page-header.component';
+
+
 
 @Component({
   selector: 'join-game',
   template: `
+<page-header [translucent]="true">Qahoot</page-header>
     <ion-content [fullscreen]="true">
       <div class="kh-page">
 
@@ -510,7 +514,7 @@ import { UserService } from '../services/user';
     }
   `],
   imports: [
-    IonContent, IonFooter, IonIcon, IonInput, IonSpinner, PageFooter, FormsModule,
+    IonContent, IonFooter, IonIcon, IonInput, IonSpinner, PageFooter, FormsModule, PageHeader
   ],
 })
 export class JoinGamePage {
