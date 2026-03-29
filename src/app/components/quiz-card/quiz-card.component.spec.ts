@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { QuizCard } from './quiz-card.component';
+import { testProviders } from 'src/test-utils/firebase-test.providers';
 
 describe('QuizCardComponent', () => {
   let component: QuizCard;
@@ -10,7 +11,7 @@ describe('QuizCardComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       imports: [ QuizCard ],
-
+providers: testProviders
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuizCard);
