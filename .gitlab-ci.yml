@@ -28,6 +28,9 @@ lint:
 test:
   stage: test
   image: node:20
+  before_script:
+    - apt-get update && apt-get install -y chromium
+    - export CHROME_BIN=$(which chromium)
   script:
     - npm run test -- --configuration=ci
   needs: [install]
