@@ -17,16 +17,15 @@ import { triangle, star, ellipse, square } from 'ionicons/icons';
 import { arrowForwardOutline, trophyOutline, peopleOutline } from 'ionicons/icons';
 import { PlayerScore } from 'src/app/models/player';
 import { QuestionBoardComponent } from './question-board';
+import { PageHeader } from 'src/app/components/page-header/page-header.component';
 @Component({
   selector: 'app-game-play',
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar, IonIcon, IonSpinner, QuestionBoardComponent],
+  imports: [IonContent, IonIcon, IonSpinner, QuestionBoardComponent, PageHeader],
   template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Qahoot</ion-title>
-      </ion-toolbar>
-    </ion-header>
+
+<page-header [translucent]="true"></page-header>
+
 
     <ion-content>
       <div class="kh-page">
@@ -40,7 +39,6 @@ import { QuestionBoardComponent } from './question-board';
 
           <!-- Header row -->
           <div class="kh-header">
-            <div class="kh-logo">Qahoot</div>
             <div class="kh-host-badge">
               {{ isAdmin() ? 'Host' : 'Player' }}
             </div>
@@ -85,7 +83,7 @@ import { QuestionBoardComponent } from './question-board';
               <button
                 class="kh-choice-btn"
                 [class.selected]="selectedChoice() === $index"
-                [disabled]="submitting() || isAdmin()"
+                [disabled]="timeLocked() || isAdmin()"
                 (click)="submitAnswer($index)"
               >
               <span class="kh-choice-icon">
@@ -397,7 +395,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   boardAnswers = signal<any[]>([]);
 
   selectedChoice = signal<number | null>(null);
-  submitting = signal(false);
+  timeLocked = signal(false);
   isAdmin = signal(false);
   answers = signal<any[]>([]);
   timeLeft = signal(30);
@@ -448,6 +446,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
       if (prevIndex !== undefined && prevIndex !== game.currentQuestionIndex) {
         this.selectedChoice.set(null);
+        this.timeLocked.set(false);
         this.subscribeToAnswers(game.currentQuestionIndex);
         this.startTimer();
       }
@@ -472,6 +471,8 @@ private startTimer() {
     if (current <= 1) {
       clearInterval(this.timerInterval);
       this.timeLeft.set(0);
+      this.timeLocked.set(true);
+
       if (!this.isAdmin() && this.selectedChoice() === null) {
         await this.gameService.submitAnswer(
           this.gameId,
@@ -503,20 +504,17 @@ private startTimer() {
       .subscribe(a => this.answers.set(a));
   }
 async submitAnswer(choiceIndex: number) {
-  if (this.submitting() || this.isAdmin()) return;
+  if (this.timeLocked() || this.isAdmin()) return;
 
   this.selectedChoice.set(choiceIndex);
-  this.submitting.set(true);
 
-  try {
+  
     await this.gameService.submitAnswer(
       this.gameId,
       this.game()!.currentQuestionIndex,
       choiceIndex
     );
-  } finally {
-    this.submitting.set(false);
-  }
+  
 }
 async nextQuestion() {
   this.boardAnswers.set([]);

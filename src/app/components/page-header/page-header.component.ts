@@ -1,11 +1,7 @@
 import { Component, inject, input } from '@angular/core';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonButton,
-  IonIcon,
+  IonHeader, IonToolbar,
+  IonButtons, IonButton, IonIcon,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { logOutOutline } from 'ionicons/icons';
@@ -18,19 +14,36 @@ import { Router } from '@angular/router';
   template: `
     <ion-header [translucent]="translucent()" [collapse]="collapse()">
       <ion-toolbar>
-        <ion-title> <ng-content /> </ion-title>
+
+        <div slot="start" class="kh-logo">Qahoot</div>
 
         @if (connectedUser()) {
           <ion-buttons slot="end">
-            <ion-button shape="round" (click)="logout()">
+            <ion-button (click)="logout()">
               <ion-icon slot="icon-only" name="log-out-outline"></ion-icon>
             </ion-button>
           </ion-buttons>
         }
+
       </ion-toolbar>
     </ion-header>
   `,
-  imports: [IonHeader, IonToolbar, IonButtons, IonButton, IonTitle, IonIcon],
+  styles: [`
+    ion-toolbar {
+      --background: #46178f;
+      --color: white;
+    }
+    .kh-logo {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #ffcc00;
+      text-shadow: 0 6px 0 rgba(0,0,0,0.3);
+      letter-spacing: 2px;
+      padding-left: 30px;
+    }
+  `],
+  imports: [IonHeader, IonToolbar, IonButtons, IonButton, IonIcon],
 })
 export class PageHeader {
   readonly translucent = input<boolean>();

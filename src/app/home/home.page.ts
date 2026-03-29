@@ -15,14 +15,12 @@ import { PageHeader } from '../components/page-header/page-header.component';
 @Component({
   selector: 'quiz-list',
   template: `
-
-  <page-header [translucent]="true">Qahoot</page-header>
+<page-header [translucent]="true"></page-header>
     <ion-content [fullscreen]="true">
       <div class="kh-page">
 
         <!-- Header -->
         <div class="kh-header">
-          <div class="kh-logo">Qahoot</div>
           <div class="kh-host-badge">My Quizzes</div>
         </div>
 
@@ -98,10 +96,7 @@ import { PageHeader } from '../components/page-header/page-header.component';
       display: flex; align-items: center; justify-content: space-between;
       width: 100%; max-width: 480px;
     }
-    .kh-logo {
-      font-size: 1.5rem; font-weight: 900; color: white;
-      text-shadow: 0 3px 0 rgba(0,0,0,0.3);
-    }
+  
     .kh-host-badge {
       background: var(--kh-yellow); color: #111;
       font-size: 0.7rem; font-weight: 900; padding: 4px 12px;
@@ -181,8 +176,9 @@ import { PageHeader } from '../components/page-header/page-header.component';
   imports: [
     IonContent, IonFab, IonFabButton, IonIcon,
     IonFooter, IonSpinner,
-    QuizCard, PageFooter , PageHeader
-  ],
+    QuizCard, PageFooter,
+    PageHeader
+],
 })
 export class HomePage {
   private readonly quizService = inject(QuizService);

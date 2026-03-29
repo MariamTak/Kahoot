@@ -12,7 +12,7 @@ import { PageFooter } from './components/page-footer/page-footer.component';
 
 `,
 
-  imports: [IonApp, IonRouterOutlet , PageFooter, IonFooter],
+  imports: [IonApp, IonRouterOutlet],
 })
 export class AppComponent implements OnInit {
   async ngOnInit() {

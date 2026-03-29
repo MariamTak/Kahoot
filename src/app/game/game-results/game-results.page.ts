@@ -7,17 +7,14 @@ import { addIcons } from 'ionicons';
 import { GameService } from 'src/app/services/game';
 import { PlayerScore } from 'src/app/models/player';
 import { trophyOutline, homeOutline, medalOutline } from 'ionicons/icons';
-
+import { PageHeader } from 'src/app/components/page-header/page-header.component';
 @Component({
   selector: 'app-game-results',
   standalone: true,
-  imports: [CommonModule, IonContent, IonHeader, IonTitle, IonToolbar, IonIcon],
+  imports: [CommonModule, IonContent, IonIcon, PageHeader],
   template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Qahoot</ion-title>
-      </ion-toolbar>
-    </ion-header>
+
+<page-header [translucent]="true"></page-header>
 
     <ion-content>
       <div class="gr-page">
