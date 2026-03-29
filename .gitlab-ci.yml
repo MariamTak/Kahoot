@@ -4,18 +4,15 @@ stages:
   - test
   - build
 
-variables:
-  NODE_VERSION: "18"
-
 cache:
   paths:
     - node_modules/
 
 install:
   stage: install
-  image: node:18
+  image: node:20
   script:
-    - npm ci
+    - npm install
   artifacts:
     paths:
       - node_modules/
@@ -23,21 +20,21 @@ install:
 
 lint:
   stage: lint
-  image: node:18
+  image: node:20
   script:
     - npm run lint
   needs: [install]
 
 test:
   stage: test
-  image: node:18
+  image: node:20
   script:
     - npm run test -- --configuration=ci
   needs: [install]
 
 build:
   stage: build
-  image: node:18
+  image: node:20
   script:
     - npm run build -- --configuration=production
   artifacts:
