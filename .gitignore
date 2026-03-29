@@ -69,9 +69,3 @@ testem.log
 .DS_Store
 Thumbs.db
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 1f5434caf883d15713813ee7df653fa90dd0688b
-src/environments/environment.ts
-src/environments/environment.prod.ts
