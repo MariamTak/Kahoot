@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
-
+import { provideRouter } from '@angular/router';
+import { provideFirebaseApp, initializeApp } from '@angular/fire/app';
+import { provideAuth, getAuth } from '@angular/fire/auth';
+import { environment } from '../../../environments/environment';
 import { PageHeader} from './page-header.component';
 
 describe('PageHeaderComponent', () => {
@@ -9,8 +12,12 @@ describe('PageHeaderComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ PageHeader ],
-      imports: [IonicModule.forRoot()]
+      imports: [ PageHeader ],
+      providers: [
+        provideRouter([]),
+        provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
+        provideAuth(() => getAuth()),
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(PageHeader);

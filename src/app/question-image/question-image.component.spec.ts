@@ -9,9 +9,7 @@ describe('QuestionImageComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ QuestionImageComponent ],
-      imports: [IonicModule.forRoot()]
-    }).compileComponents();
+      imports: [ QuestionImageComponent ]    }).compileComponents();
 
     fixture = TestBed.createComponent(QuestionImageComponent);
     component = fixture.componentInstance;
