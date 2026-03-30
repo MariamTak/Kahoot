@@ -125,20 +125,6 @@ import { QuestionBoardComponent } from './question-board';
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   styles: [`
     :host {
       --kh-purple: #46178f;
@@ -360,30 +346,6 @@ import { QuestionBoardComponent } from './question-board';
 })
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export class GamePlayComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -430,7 +392,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.gameId = this.route.snapshot.paramMap.get('id')!;
-    this.scoresSub = this.gameService.getScores(this.gameId).subscribe(s => this.scores.set(s));
+    this.scoresSub = this.gameService.getScores(this.gameId)
+    .subscribe(s => this.scores.set(s));
     const user = await firstValueFrom(
       this.authService.getConnectedUser().pipe(filter(u => u !== null))
     );
@@ -445,10 +408,10 @@ export class GamePlayComponent implements OnInit, OnDestroy {
         this.quiz.set(quiz);
         this.startTimer();
       }
-
+        // si l Index de la question change
       if (prevIndex !== undefined && prevIndex !== game.currentQuestionIndex) {
-        this.selectedChoice.set(null);
-        this.subscribeToAnswers(game.currentQuestionIndex);
+        this.selectedChoice.set(null); // resert le choix du joueur
+        this.subscribeToAnswers(game.currentQuestionIndex); // on recharge les rps pour la nv personne 
         this.startTimer();
       }
 
@@ -496,12 +459,12 @@ private startTimer() {
   }, 1000);
 }
 
-  private subscribeToAnswers(questionIndex: number) {
+private subscribeToAnswers(questionIndex: number) {
     this.answersSub?.unsubscribe();
     this.answersSub = this.gameService
       .getAnswersForQuestion(this.gameId, questionIndex)
       .subscribe(a => this.answers.set(a));
-  }
+}
 async submitAnswer(choiceIndex: number) {
   if (this.submitting() || this.isAdmin()) return;
 
