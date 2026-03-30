@@ -408,14 +408,9 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       }
         // si l Index de la question change
       if (prevIndex !== undefined && prevIndex !== game.currentQuestionIndex) {
-<<<<<<< HEAD
-        this.selectedChoice.set(null); // resert le choix du joueur
-        this.subscribeToAnswers(game.currentQuestionIndex); // on recharge les rps pour la nv personne 
-=======
         this.selectedChoice.set(null);
         this.timeLocked.set(false);
         this.subscribeToAnswers(game.currentQuestionIndex);
->>>>>>> d2f0c8d6e6cd946c54e7adc821f49afb185fb6ab
         this.startTimer();
       }
 
