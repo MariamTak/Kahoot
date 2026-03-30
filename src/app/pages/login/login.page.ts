@@ -12,6 +12,7 @@ import { addIcons } from 'ionicons';
 import { AuthService } from '../../services/auth';
 import { logoGoogle, lockClosedOutline, mailOutline } from 'ionicons/icons';
 addIcons({ logoGoogle, lockClosedOutline, mailOutline });
+import { ToastController } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-login',
@@ -245,16 +246,26 @@ export class LoginPage {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
 
+  private toastCtrl = inject(ToastController);
   loginForm = this.fb.group({
     email: ['', [Validators.email, Validators.required]],
     password: ['', Validators.minLength(6)],
   });
 
-  onSubmit() {
-    const { email, password } = this.loginForm.value;
-    this.authService.login(email!, password!);
-  }
 
+async onSubmit() {
+  const { email, password } = this.loginForm.value;
+  try {
+    await this.authService.login(email!, password!);
+  } catch (error) {
+    const toast = await this.toastCtrl.create({
+      message: 'Email ou mot de passe incorrect',
+      duration: 3000,
+      color: 'danger',
+    });
+    await toast.present();
+  }
+}
   loginWithGoogle() {
     this.authService.signInWithGoogle();
   }
