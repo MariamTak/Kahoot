@@ -24,6 +24,7 @@ cypress:
   stage: test
   script:
     - npm install
+    - npx cypress install
     - npx ng serve --port 8100 --host 0.0.0.0 &
     - npx wait-on http://localhost:8100 --timeout 120000
     - npx cypress run --browser chrome
