@@ -185,7 +185,7 @@ export class HomePage {
   private readonly modalCtrl = inject(ModalController);
 
   private quizzes$ = this.quizService.getAll();
-  protected quizzes = toSignal(this.quizzes$, { initialValue: [] });
+protected quizzes = toSignal(this.quizService.getAll(), { initialValue: [] });
   protected isLoading = signal(true);
 
   constructor() {
@@ -206,8 +206,7 @@ export class HomePage {
     if (eventDetails.data) {
       try {
         await this.quizService.setQuiz(eventDetails.data);
-        this.quizzes$ = this.quizService.getAll();
-        this.quizzes = toSignal(this.quizzes$, { initialValue: [] });
+
       } catch (error) {
         console.error('Error creating quiz:', error);
       }
