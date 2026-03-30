@@ -393,6 +393,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   game = signal<Game | null>(null);
   quiz = signal<Quiz | null>(null);
   boardAnswers = signal<any[]>([]);
+  private countdownAudio = new Audio('assets/timer.wav');
+
 
   selectedChoice = signal<number | null>(null);
   timeLocked = signal(false);
@@ -493,6 +495,10 @@ private startTimer() {
     } else {
       this.timeLeft.set(current - 1);
 
+      if (current === 6) {
+    this.countdownAudio.currentTime = 0;
+    this.countdownAudio.play().catch(() => {});
+  }
     }
   }, 1000);
 }
@@ -532,5 +538,6 @@ async nextQuestion() {
     this.answersSub?.unsubscribe();
     clearInterval(this.timerInterval);
     this.scoresSub?.unsubscribe();
+    this.countdownAudio.pause();
   }
 }
