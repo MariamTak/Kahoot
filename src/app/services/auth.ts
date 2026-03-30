@@ -63,7 +63,8 @@ async register(email: string, password: string, alias: string): Promise<void> {
       this.router.navigateByUrl('/');
    
     } catch (error) {
-      console.error(error);}
+      console.error(error);
+    throw error;}
   }
 
 async signInWithGoogle(): Promise<void> {
