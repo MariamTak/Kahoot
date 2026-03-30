@@ -1,6 +1,6 @@
 # 🎮 Kahoot Clone
 
-A real-time multiplayer quiz game built with **Ionic**, **Angular**, and **Firebase** — inspired by Kahoot. Players can create quizzes, host live games, and compete in real time using a 4-character entry code.
+A real-time multiplayer quiz game built with **Ionic**, **Angular**, and **Firebase** — inspired by Kahoot. Players can create quizzes, host live games, and compete in real time.
 
 ---
 
