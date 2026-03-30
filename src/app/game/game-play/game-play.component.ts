@@ -96,15 +96,15 @@ import { PageHeader } from 'src/app/components/page-header/page-header.component
 
 
          @if (game()?.currentStatus === 'done') {
-  <app-question-board
-    [question]="currentQuestion()!"
-    [scores]="scores()"
-    [answers]="boardAnswers()"
-    [players]="game()!.players"
-    [isAdmin]="isAdmin()"
-    [isLast]="isLastQuestion()"
-    (onNext)="nextQuestion()"
-  />
+              <app-question-board
+                [question]="currentQuestion()!"
+                [scores]="scores()"
+                [answers]="boardAnswers()"
+                [players]="game()!.players"
+                [isAdmin]="isAdmin()"
+                [isLast]="isLastQuestion()"
+                (onNext)="nextQuestion()"
+              />
 } @else if (isAdmin()) {
   <div class="kh-admin-bar">
     <div class="kh-players-card">

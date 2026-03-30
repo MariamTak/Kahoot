@@ -58,7 +58,7 @@ import { PageHeader } from 'src/app/components/page-header/page-header.component
         <!-- QR -->
         <div class="kh-qr-card">
           <qrcode
-            [qrdata]="game()!.entryCode"
+           [qrdata]="joinUrl()"
             [width]="140"
             [errorCorrectionLevel]="'M'"
           />
@@ -414,6 +414,7 @@ export class GameWaitingPage implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   isAdmin  = signal(false);
   myAlias  = signal('');
+  joinUrl = signal('');
 
   game = signal<Game | null>(null);
   starting = signal(false);
@@ -438,6 +439,7 @@ export class GameWaitingPage implements OnInit, OnDestroy {
         // ↑ écoute Firestore EN TEMPS RÉEL — se déclenche à chaque changement
     this.game.set(game);
         // ↑ met à jour le signal → le template se rafraîchit 
+     this.joinUrl.set(`${window.location.origin}/join-game?code=${game.entryCode}`);
     // Role detection — runs on every update but user is already resolved
     this.isAdmin.set(user?.uid === game.adminId);
 
