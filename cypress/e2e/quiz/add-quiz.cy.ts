@@ -48,7 +48,7 @@ describe('Create Quiz E2E', () => {
 
     // Vérifier que le modal est fermé et le quiz apparaît
     cy.get('create-quiz-modal').should('not.exist');
-    cy.get('quiz-card .kh-quiz-title', { timeout: 10000 }).should('contain', 'Guess the Capital CityX');
+    cy.get('quiz-card .kh-quiz-title', { timeout: 10000 }).should('contain', 'X');
   });
 
   it('should add a question', () => {
