@@ -1,51 +1,35 @@
-stages:
-  - install
-  - lint
-  - build
-  - e2e
+image: cypress/browsers:22.15.0
 
 cache:
+  key: ${CI_COMMIT_REF_SLUG}
   paths:
     - node_modules/
+    - .npm/
 
-install:
-  stage: install
-  image: node:20
-  script:
-    - npm install
-  artifacts:
-    paths:
-      - node_modules/
-    expire_in: 1 hour
-
-lint:
-  stage: lint
-  image: node:20
-  script:
-    - npm run lint || true
-  needs: [install]
-
+stages:
+  - build
+  - test
 
 build:
   stage: build
-  image: node:20
   script:
-    - npm run build -- --configuration=production
+    - npm ci
+    - npx ng build --configuration production
   artifacts:
     paths:
       - www/
-    expire_in: 1 week
-  needs: [install]
-  only:
-    - main
+    expire_in: 1 hour
 
-
-e2e:
-  stage: e2e
-  image: cypress/included:13.6.0
+cypress:
+  stage: test
   script:
-    - npm run build -- --configuration=ci
-    - npx cypress run
-  needs: [install]
-  only:
-    - main
+    - npm ci
+    - npx ng serve --port 8100 --host 0.0.0.0 &
+    - npx wait-on http://localhost:8100 --timeout 120000
+    - npx cypress run --browser chrome
+  artifacts:
+    when: always
+    paths:
+      - cypress/videos/**/*.mp4
+      - cypress/screenshots/**/*.png
+    expire_in: 1 day
