@@ -15,9 +15,10 @@ describe('Create Quiz E2E', () => {
     cy.get('ion-fab-button').click({ force: true });
 
     // Titre du quiz
-    cy.get('ion-input.kh-title-input')
-      .find('input.native-input')
-      .type('X');
+   cy.get('ion-input.kh-title-input')
+  .find('input.native-input')
+  .clear({ force: true })
+  .type('Mon Quiz Test', { force: true });
 
     // Description
     cy.get('ion-textarea.kh-description-input')
@@ -48,7 +49,7 @@ describe('Create Quiz E2E', () => {
 
     // Vérifier que le modal est fermé et le quiz apparaît
     cy.get('create-quiz-modal').should('not.exist');
-    cy.get('quiz-card .kh-quiz-title', { timeout: 10000 }).should('contain', 'Guess the Capital CityX');
+    cy.get('quiz-card .kh-quiz-title', { timeout: 10000 }).should('contain', 'Mon Quiz Test');
   });
 
   it('should add a question', () => {
