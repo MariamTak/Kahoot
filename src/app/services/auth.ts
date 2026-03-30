@@ -58,23 +58,12 @@ async register(email: string, password: string, alias: string): Promise<void> {
   }
 }
   async login(email: string, password: string): Promise<void> {
-    let toast: HTMLIonToastElement | undefined;
     try {
       await signInWithEmailAndPassword(this.auth, email, password);
       this.router.navigateByUrl('/');
-      toast = await this.toastController.create({
-        message: `Login successful`,
-        duration: 1500,
-      });
+   
     } catch (error) {
-      console.error(error);
-      toast = await this.toastController.create({
-        message: `Something wrong happened during login`,
-        duration: 1500,
-      });
-    } finally {
-      await toast?.present();
-    }
+      console.error(error);}
   }
 
 async signInWithGoogle(): Promise<void> {
