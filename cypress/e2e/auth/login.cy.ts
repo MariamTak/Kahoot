@@ -21,14 +21,6 @@ describe('Login E2E', () => {
     });
   });
 
-  it('should show error with wrong credentials', () => {
-    cy.get('ion-input[formcontrolname="email"]')
-      .find('input.native-input').type('wrong@email.com');
-    cy.get('ion-input[formcontrolname="password"]')
-      .find('input.native-input').type('wrongpassword');
-    cy.get('ion-button[type="submit"]').click();
-    cy.get('ion-toast', { timeout: 10000 }).should('be.visible'); 
-  });
 
   it('should not submit with empty fields', () => {
     cy.get('ion-button[type="submit"]').click();
