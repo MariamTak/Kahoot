@@ -18,12 +18,12 @@ import { PageHeader } from '../components/page-header/page-header.component';
 @Component({
   selector: 'join-game',
   template: `
-<page-header [translucent]="true">Qahoot</page-header>
+  <page-header [translucent]="true"></page-header>
+
     <ion-content [fullscreen]="true">
       <div class="kh-page">
 
         <div class="kh-header">
-          <div class="kh-logo">Qahoot</div>
           <p class="kh-tagline">Join the fun</p>
         </div>
 

@@ -117,31 +117,26 @@ export class GameService {
     ).join('');
   }
 
-  async submitAnswer(
-  gameId: string,
-  questionIndex: number,
-  choiceIndex: number
-): Promise<void> {
-  const user = await firstValueFrom(
-    this.authService.getConnectedUser().pipe(filter(u => u !== null))
-  );
-  if (!user) throw new Error('Not authenticated');
-
-  const answerRef = doc(
-    this.firestore,
-    `games/${gameId}/answers/${questionIndex}_${user.uid}`
-  );
-
-  const existing = await getDoc(answerRef);
-  if (existing.exists()) return;
-
+ async submitAnswer(
+    gameId: string,
+    questionIndex: number,
+    choiceIndex: number
+  ): Promise<void> {
+    const user = await firstValueFrom(
+      this.authService.getConnectedUser().pipe(filter(u => u !== null))
+    );
+    if (!user) throw new Error('Not authenticated');
+ 
+    await setDoc(
+      doc(this.firestore, `games/${gameId}/answers/${questionIndex}_${user.uid}`),
+      {
+        uid: user.uid,
+        questionIndex,
+        choiceIndex,
+        answeredAt: new Date(),
+      }
+    );
   
-  await setDoc(answerRef, {
-    uid: user.uid,
-    questionIndex,
-    choiceIndex,
-    answeredAt: new Date(),
-});
 }
 
   getAnswersForQuestion(gameId: string, questionIndex: number): Observable<any[]> {

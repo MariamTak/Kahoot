@@ -18,7 +18,8 @@ import { PageHeader } from 'src/app/components/page-header/page-header.component
 @Component({
   selector: 'game-waiting-page',
   template: `
-<page-header [translucent]="true">Qahoot</page-header>
+<page-header [translucent]="true"></page-header>
+
 <ion-content [fullscreen]="true">
   <div class="kh-page">
 
@@ -31,7 +32,6 @@ import { PageHeader } from 'src/app/components/page-header/page-header.component
 
       <!-- Header -->
       <div class="kh-header">
-        <div class="kh-logo">Qahoot</div>
         <div class="kh-host-badge">Host</div>
       </div>
 
@@ -90,7 +90,7 @@ import { PageHeader } from 'src/app/components/page-header/page-header.component
       <!-- Start button -->
       <button
         class="kh-start-btn"
-        [disabled]="game()!.players.length < 1 || starting()"
+        [disabled]="game()!.players.length < 2 || starting()"
         (click)="startGame()"
       >
         @if (starting()) {
@@ -404,7 +404,7 @@ import { PageHeader } from 'src/app/components/page-header/page-header.component
   standalone: true,
   imports: [
     IonContent, IonIcon, IonSpinner, IonFooter,
-    QRCodeComponent, PageFooter , PageHeader 
+    QRCodeComponent, PageFooter, PageHeader
   ],
 })
 export class GameWaitingPage implements OnInit, OnDestroy {

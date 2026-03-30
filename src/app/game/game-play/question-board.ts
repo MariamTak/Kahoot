@@ -5,12 +5,14 @@ import { PlayerScore } from 'src/app/models/player';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { checkmarkCircleOutline, arrowForwardOutline, trophyOutline, triangle, star, ellipse, square } from 'ionicons/icons';
-
+import { PageHeader } from 'src/app/components/page-header/page-header.component';
 @Component({
   selector: 'app-question-board',
   standalone: true,
-  imports: [CommonModule, IonIcon],
+  imports: [CommonModule, IonIcon, PageHeader],
   template: `
+  <page-header [translucent]="true"></page-header>
+
     <div class="qb-overlay">
       <div class="qb-card">
 
