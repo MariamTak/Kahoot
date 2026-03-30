@@ -38,3 +38,14 @@ build:
   needs: [install]
   only:
     - main
+
+
+e2e:
+  stage: e2e
+  image: cypress/included:13.6.0
+  script:
+    - npm run build -- --configuration=ci
+    - npx cypress run
+  needs: [install]
+  only:
+    - main
