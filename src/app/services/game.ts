@@ -192,8 +192,8 @@ export class GameService {
     let questionScore = 0;
     if (isCorrect && answer) {
       const answeredAt: Date = answer['answeredAt']?.toDate?.() ?? new Date();
-      const timeElapsed = Math.min(30, (answeredAt.getTime() - questionStartTime.getTime()) / 1000);
-      questionScore = Math.max(500, Math.round(1000 - (timeElapsed / 30) * 500));
+      const timeElapsed = Math.min(15, (answeredAt.getTime() - questionStartTime.getTime()) / 1000);
+      questionScore = Math.max(500, Math.round(1000 - (timeElapsed / 15) * 500));
       console.log(`${player.alias}: ${timeElapsed.toFixed(1)}s → ${questionScore}pts`);
     }
 

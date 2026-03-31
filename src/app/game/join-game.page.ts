@@ -544,16 +544,28 @@ export class JoinGamePage {
     });
   }
 
-  async startScan() {
+ async startScan() {
     this.error.set('');
-    this.scannedCode.set('');
     this.scanning.set(true);
     try {
       const result = await CapacitorBarcodeScanner.scanBarcode({
         hint: CapacitorBarcodeScannerTypeHint.ALL,
       });
+ 
       if (result?.ScanResult) {
-        this.scannedCode.set(result.ScanResult);
+        const raw = result.ScanResult.trim();
+ 
+        // Extraire le code depuis l'URL (ex: http://.../join-game?code=2KE9)
+        let code = raw;
+        try {
+          const url = new URL(raw);
+          const param = url.searchParams.get('code');
+          if (param) code = param;
+        } catch {
+          // raw n'est pas une URL → on l'utilise directement comme code
+        }
+ 
+        await this.doJoin(code);
       } else {
         this.error.set('No code detected. Please try again.');
       }
@@ -591,25 +603,25 @@ export class JoinGamePage {
       }
       const game = games[0];
       this.foundGameId = game.id;
-
+ 
       const user = await firstValueFrom(this.authService.getConnectedUser());
       if (!user) {
         this.error.set('You must be logged in to join a game.');
         return;
       }
-
+ 
       const userDoc = await firstValueFrom(this.userService.getById(user.uid));
       this.aliasInput = userDoc?.alias ?? user.displayName ?? user.email ?? user.uid;
-
+ 
       await this.gameService.joinGame(this.foundGameId, this.aliasInput);
-
+ 
       this.gameSub = this.gameService.getGame(this.foundGameId).subscribe((liveGame) => {
         this.currentGame.set(liveGame);
         if (liveGame?.status === 'in-progress') {
           this.router.navigate(['/game', this.foundGameId, 'play']);
         }
       });
-
+ 
       this.step.set('waiting');
     } catch (err) {
       console.error('Error joining game:', err);
@@ -618,7 +630,6 @@ export class JoinGamePage {
       this.joining.set(false);
     }
   }
-
   async leaveGame() {
     try {
       await this.gameService.leaveGame(this.foundGameId, this.aliasInput);

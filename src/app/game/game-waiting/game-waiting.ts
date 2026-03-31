@@ -58,7 +58,7 @@ import { PageHeader } from 'src/app/components/page-header/page-header.component
         <!-- QR -->
         <div class="kh-qr-card">
           <qrcode
-            [qrdata]="game()!.entryCode"
+           [qrdata]="joinUrl()"
             [width]="140"
             [errorCorrectionLevel]="'M'"
           />
@@ -414,6 +414,7 @@ export class GameWaitingPage implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   isAdmin  = signal(false);
   myAlias  = signal('');
+  joinUrl = signal('');
 
   game = signal<Game | null>(null);
   starting = signal(false);
@@ -431,21 +432,27 @@ export class GameWaitingPage implements OnInit, OnDestroy {
 
   // Fetch user ONCE before subscribing
   const user = await firstValueFrom(this.authService.getConnectedUser());
-
+  // ↑ attend UNE FOIS l'utilisateur connecté (résout la Promise)
+  // firstValueFrom transforme un Observable en Promise
 
   this.sub = this.gameService.getGame(gameId).subscribe((game) => {
+        // ↑ écoute Firestore EN TEMPS RÉEL — se déclenche à chaque changement
     this.game.set(game);
-
+        // ↑ met à jour le signal → le template se rafraîchit 
+     this.joinUrl.set(`${window.location.origin}/join-game?code=${game.entryCode}`);
     // Role detection — runs on every update but user is already resolved
     this.isAdmin.set(user?.uid === game.adminId);
 
     // Track player's own alias for leaveGame
     const me = game.players.find(p => p.uid === user?.uid);
     if (me) this.myAlias.set(me.alias);
+    // ↑ trouve l'alias du joueur connecté dans la liste des joueurs
 
     // Auto-redirect when admin starts the game
     if (game.status === 'in-progress') {
       this.router.navigate(['/game', gameId, 'play']);
+      // ↑ redirect automatique quand l'admin démarre — fonctionne pour TOUS
+      // car tous écoutent le même document Firestore
     }
 
   });

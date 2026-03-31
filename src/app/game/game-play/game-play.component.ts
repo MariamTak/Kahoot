@@ -56,7 +56,7 @@ import { PageHeader } from 'src/app/components/page-header/page-header.component
             <div class="kh-timer-track">
               <div
                 class="kh-timer-fill"
-                [style.width.%]="(timeLeft() / 30) * 100"
+                [style.width.%]="(timeLeft() / 15) * 100"
                 [class.urgent]="timeLeft() <= 10"
               ></div>
             </div>
@@ -400,9 +400,13 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   timeLocked = signal(false);
   isAdmin = signal(false);
   answers = signal<any[]>([]);
-  timeLeft = signal(30);
+  timeLeft = signal(15);
 
   private timerInterval: any;
+  private audioUnlocked = false;
+
+
+
 
   currentQuestion = computed<Question | null>(() => {
     const q = this.quiz();
@@ -429,6 +433,14 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+      const unlock = () => {
+    this.unlockAudio();
+    document.removeEventListener('touchstart', unlock);
+    document.removeEventListener('click', unlock);
+  };
+  document.addEventListener('touchstart', unlock, { once: true });
+  document.addEventListener('click', unlock, { once: true });
+  
     this.gameId = this.route.snapshot.paramMap.get('id')!;
     this.scoresSub = this.gameService.getScores(this.gameId).subscribe(s => this.scores.set(s));
     const user = await firstValueFrom(
@@ -466,7 +478,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
 private startTimer() {
   clearInterval(this.timerInterval);
-  this.timeLeft.set(30);
+  this.timeLeft.set(15);
   this.timerInterval = setInterval(async () => {
     const current = this.timeLeft();
     
@@ -531,6 +543,14 @@ async nextQuestion() {
     await this.gameService.goToNextQuestion(this.gameId, nextIndex);
     this.subscribeToAnswers(nextIndex);
   }
+}
+private unlockAudio() {
+  if (this.audioUnlocked) return;
+  this.countdownAudio.play().then(() => {
+    this.countdownAudio.pause();
+    this.countdownAudio.currentTime = 0;
+    this.audioUnlocked = true;
+  }).catch(() => {});
 }
 
   ngOnDestroy() {
